@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'auth_service.dart';
@@ -63,7 +64,10 @@ class BiometricService {
   final LocalAuthentication _localAuth = LocalAuthentication();
 
   // Current device capability (Defaults to 'both' to showcase fingerprint & face recognition)
-  DeviceBiometricCapability _deviceCapability = DeviceBiometricCapability.both;
+  // Web does not support the local_auth plugin, so keep the capability disabled there.
+  DeviceBiometricCapability _deviceCapability = kIsWeb
+      ? DeviceBiometricCapability.none
+      : DeviceBiometricCapability.both;
 
   // Map of email -> saved BiometricCredential
   final Map<String, BiometricCredential> _savedCredentials = {};
@@ -147,6 +151,10 @@ class BiometricService {
 
   /// Check if ongoing device hardware supports biometric scanning
   Future<bool> get isOngoingDeviceSupported async {
+    if (kIsWeb) {
+      return false;
+    }
+
     try {
       final canCheck = await _localAuth.canCheckBiometrics;
       final isSupported = await _localAuth.isDeviceSupported();
@@ -164,9 +172,10 @@ class BiometricService {
   Future<bool> scanFingerprintWithOngoingDevice({
     String reason = 'Scan fingerprint using device default settings to authenticate',
   }) async {
-    if (fallbackToDialogDirectly) {
+    if (kIsWeb || fallbackToDialogDirectly) {
       return false;
     }
+
     try {
       final canCheck = await _localAuth.canCheckBiometrics.timeout(const Duration(milliseconds: 100));
       final isSupported = await _localAuth.isDeviceSupported().timeout(const Duration(milliseconds: 100));

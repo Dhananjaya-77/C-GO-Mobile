@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../services/map_service.dart';
 
 class MapScreen extends StatefulWidget {
@@ -19,6 +20,29 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
     _mapService.addListener(_onMapServiceChanged);
+    _ensureLocationPermission();
+  }
+
+  Future<void> _ensureLocationPermission() async {
+    final status = await Permission.locationWhenInUse.status;
+    if (status.isDenied || status.isRestricted) {
+      final result = await Permission.locationWhenInUse.request();
+      if (!result.isGranted) {
+        // show a simple dialog explaining why location is needed
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text('Location permission'),
+              content: const Text('Location permission is required to track routes.'),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
+              ],
+            ),
+          );
+        }
+      }
+    }
   }
 
   @override
