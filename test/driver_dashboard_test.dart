@@ -116,4 +116,21 @@ void main() {
     expect(find.byType(SosDialog), findsOneWidget);
     expect(find.text('EMERGENCY SOS ALERT'), findsOneWidget);
   });
+
+  testWidgets('Quick Logout button is present in top right corner of DriverDashboardScreen and opens confirmation dialog', (tester) async {
+    setScreenSize(tester);
+    await tester.pumpWidget(const MaterialApp(home: DriverDashboardScreen()));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.byTooltip('Logout'), findsOneWidget);
+    await tester.tap(find.byTooltip('Logout'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Confirm Sign Out'), findsOneWidget);
+    expect(find.text('Are you sure you want to sign out of the Driver Dashboard?'), findsOneWidget);
+    expect(find.text('Sign Out'), findsOneWidget);
+    expect(find.text('Cancel'), findsOneWidget);
+  });
 }

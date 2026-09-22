@@ -180,6 +180,49 @@ class SensorTelemetryCard extends StatelessWidget {
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                     ),
                   ),
+                ] else ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isTampered
+                          ? AppTheme.tamperRedLight
+                          : AppTheme.customsBlue.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isTampered
+                            ? AppTheme.tamperRed.withValues(alpha: 0.3)
+                            : AppTheme.customsBlue.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: isTampered ? AppTheme.tamperRed : AppTheme.securityGreen,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            isTampered
+                                ? 'Security Breach Auto-Detected via IoT Lock Telemetry'
+                                : 'Hardware IoT Sensors Active • Auto-Monitored via ESP32 & E-Seal',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: isTampered ? AppTheme.tamperRed : AppTheme.customsBlue,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ],
             ),

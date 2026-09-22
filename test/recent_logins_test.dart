@@ -63,7 +63,7 @@ void main() {
       expect(emailField.controller?.text, 'dhananjaya1@gmail.com');
 
       final passwordField = tester.widget<TextFormField>(find.byType(TextFormField).last);
-      expect(passwordField.controller?.text, '12345');
+      expect(passwordField.controller?.text, isEmpty);
     });
 
     testWidgets('Removing recent login clears it from the list', (tester) async {

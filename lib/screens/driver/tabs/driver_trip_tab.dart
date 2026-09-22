@@ -264,9 +264,9 @@ class DriverTripTab extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    const Text(
-                      'Katunayake Export Processing Zone',
-                      style: TextStyle(
+                    Text(
+                      activeTrip?.origin ?? 'Colombo Fort',
+                      style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF0F172A),
@@ -274,7 +274,7 @@ class DriverTripTab extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     const Text(
-                      'Started: Today at 6:00 AM',
+                      'Started: Today at 8:45 AM',
                       style: TextStyle(
                         fontSize: 11,
                         color: Color(0xFF94A3B8),
@@ -290,9 +290,9 @@ class DriverTripTab extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    const Text(
-                      'Port of Colombo',
-                      style: TextStyle(
+                    Text(
+                      activeTrip?.destination ?? 'Orugodawaththa',
+                      style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF0F172A),
@@ -300,7 +300,7 @@ class DriverTripTab extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     const Text(
-                      'Expected: Today at 11:30 AM',
+                      'Expected: Today at 9:35 AM',
                       style: TextStyle(
                         fontSize: 11,
                         color: Color(0xFF94A3B8),
@@ -353,14 +353,16 @@ class DriverTripTab extends StatelessWidget {
                 bgColor: const Color(0xFFEFF6FF),
                 iconColor: const Color(0xFF2563EB),
                 label: 'Distance',
-                value: '142 km left',
+                value: activeTrip != null
+                    ? '${(activeTrip!.totalDistanceKm - activeTrip!.coveredDistanceKm).toStringAsFixed(1)} km left'
+                    : '3.3 km left',
               ),
               _buildProgressCircle(
                 icon: Icons.access_time_rounded,
                 bgColor: const Color(0xFFEFF6FF),
                 iconColor: const Color(0xFF3B82F6),
                 label: 'ETA',
-                value: '2h 30m',
+                value: '18 min',
               ),
               _buildProgressCircle(
                 icon: Icons.inventory_2_outlined,

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'login_screen.dart';
+import '../widgets/cgo_logo.dart';
+import 'welcome_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -18,7 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
     _timer = Timer(const Duration(seconds: 2), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          MaterialPageRoute(builder: (context) => const WelcomeScreen()),
         );
       }
     });
@@ -33,43 +34,12 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1565C0),
-              Color(0xFF0D47A1),
-            ],
-          ),
-        ),
+      backgroundColor: const Color(0xFF0E3352), // Customs Navy
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 16,
-                    offset: Offset(0, 6),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.all(6),
-              child: ClipOval(
-                child: Image.asset(
-                  'assets/images/logo_circle.png',
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
+            const CgoLogo(size: 130, showShadow: true),
             const SizedBox(height: 24),
             const Text(
               'C GO',
@@ -77,21 +47,26 @@ class _SplashScreenState extends State<SplashScreen> {
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
-                letterSpacing: 1.5,
+                letterSpacing: 2.0,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             const Text(
-              'Vehicle Tracking & Security',
+              'SecureTrack SL • Sri Lanka Customs',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.white70,
+                color: Color(0xFF94A3B8),
                 letterSpacing: 0.5,
               ),
             ),
             const SizedBox(height: 48),
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            const SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF38BDF8)),
+              ),
             ),
           ],
         ),

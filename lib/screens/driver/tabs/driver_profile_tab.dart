@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../models/driver_model.dart';
 import '../../../services/auth_service.dart';
-import '../../login_screen.dart';
+import '../../welcome_screen.dart';
 
 class DriverProfileTab extends StatefulWidget {
   final DriverProfile driver;
@@ -23,7 +23,7 @@ class _DriverProfileTabState extends State<DriverProfileTab> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Confirm Sign Out'),
         content: const Text(
-          'Are you sure you want to log out from this device? Your active transit session will be safely preserved.',
+          'Are you sure you want to sign out of the Driver Dashboard?',
         ),
         actions: [
           TextButton(
@@ -35,7 +35,7 @@ class _DriverProfileTabState extends State<DriverProfileTab> {
             onPressed: () {
               Navigator.of(ctx).pop();
               Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                MaterialPageRoute(builder: (_) => const WelcomeScreen()),
                 (route) => false,
               );
             },

@@ -23,8 +23,10 @@ void main() {
       expect(find.textContaining('Kasun Perera'), findsNothing);
       expect(find.textContaining('Inspector Kamal'), findsNothing);
 
-      // Verify role-based labels are present
-      expect(find.textContaining('Customs Transport'), findsWidgets);
+      // Verify header title is present and greeting/customs transport words are removed from top
+      expect(find.text('Driver Navigation Module'), findsOneWidget);
+      expect(find.textContaining('Good Morning'), findsNothing);
+      expect(find.textContaining('Customs Transport'), findsNothing);
     });
 
     testWidgets('Inspector Dashboard does not display inspector personal name or hauler driver name', (tester) async {

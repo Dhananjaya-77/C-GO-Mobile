@@ -1,5 +1,7 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart' as ll;
+import '../services/google_maps_navigation_service.dart';
 import '../utils/app_theme.dart';
 
 class CorridorMapWidget extends StatefulWidget {
@@ -53,8 +55,32 @@ class _CorridorMapWidgetState extends State<CorridorMapWidget>
     super.dispose();
   }
 
+  int get _routeIndex {
+    final dest = widget.destinationTitle.toLowerCase();
+    if (dest.contains('grayline 1')) return 1;
+    if (dest.contains('grayline 2')) return 2;
+    return 0;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final navService = GoogleMapsNavigationService.instance;
+    final rIndex = _routeIndex;
+    final routeCoords = navService
+        .getCoordinatesForRoute(rIndex)
+        .map((c) => ll.LatLng(c.latitude, c.longitude))
+        .toList();
+    final originPos = const ll.LatLng(6.9442, 79.8453);
+    final dest = navService.getDestinationCoords(rIndex);
+    final destPos = ll.LatLng(dest.latitude, dest.longitude);
+    final vPos = navService.getVehiclePosition(
+      rIndex,
+      widget.progress,
+      isDeviated: widget.isDeviated,
+    );
+    final vehiclePos = ll.LatLng(vPos.latitude, vPos.longitude);
+    final isTest = WidgetsBinding.instance.runtimeType.toString().contains('TestWidgetsFlutterBinding');
+
     return Container(
       height: widget.height,
       decoration: BoxDecoration(
@@ -75,20 +101,154 @@ class _CorridorMapWidgetState extends State<CorridorMapWidget>
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
-          // Background Custom Paint GIS Grid, River/Roads, and Corridor
+          // Real Google Map
           Positioned.fill(
-            child: AnimatedBuilder(
-              animation: _pulseController,
-              builder: (context, _) {
-                return CustomPaint(
-                  painter: _CorridorPainter(
-                    progress: widget.progress,
-                    isDeviated: widget.isDeviated,
-                    pulseValue: _pulseController.value,
-                    showSrsCallouts: widget.showSrsCallouts,
+            child: FlutterMap(
+              options: MapOptions(
+                initialCenter: vehiclePos,
+                initialZoom: 13.5,
+                interactionOptions: const InteractionOptions(
+                  flags: InteractiveFlag.all,
+                ),
+              ),
+              children: [
+                if (!isTest)
+                  TileLayer(
+                    urlTemplate: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+                    userAgentPackageName: 'com.example.securetrack_mobile',
+                    maxZoom: 19,
+                    subdomains: const ['mt0', 'mt1', 'mt2', 'mt3'],
+                  )
+                else
+                  Container(color: const Color(0xFFE2E8F0)),
+
+                // Geofence buffer corridor
+                PolylineLayer(
+                  polylines: [
+                    Polyline(
+                      points: routeCoords,
+                      strokeWidth: 14.0,
+                      color: const Color(0xFF0284C7).withValues(alpha: 0.25),
+                      strokeCap: StrokeCap.round,
+                    ),
+                    Polyline(
+                      points: routeCoords,
+                      strokeWidth: 4.5,
+                      color: const Color(0xFF1D4ED8),
+                      strokeCap: StrokeCap.round,
+                    ),
+                    if (widget.isDeviated)
+                      Polyline(
+                        points: [
+                          routeCoords.length > 2 ? routeCoords[2] : originPos,
+                          vehiclePos,
+                        ],
+                        strokeWidth: 4.0,
+                        color: const Color(0xFFDC2626),
+                        pattern: StrokePattern.dashed(segments: const [6, 4]),
+                      ),
+                  ],
+                ),
+
+                // Markers
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: originPos,
+                      width: 34,
+                      height: 34,
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(Icons.anchor_rounded, color: Colors.white, size: 14),
+                      ),
+                    ),
+                    Marker(
+                      point: destPos,
+                      width: 34,
+                      height: 34,
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFDC2626),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(Icons.warehouse_rounded, color: Colors.white, size: 14),
+                      ),
+                    ),
+                    Marker(
+                      point: vehiclePos,
+                      width: 44,
+                      height: 44,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: widget.isDeviated ? const Color(0xFFDC2626) : const Color(0xFF0E3352),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (widget.isDeviated ? const Color(0xFFDC2626) : const Color(0xFF0E3352))
+                                  .withValues(alpha: 0.35),
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          widget.isDeviated ? Icons.warning_rounded : Icons.local_shipping_rounded,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Google Maps Watermark badge
+          Positioned(
+            left: 10,
+            bottom: 8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.88),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.map_rounded, size: 12, color: Color(0xFF4285F4)),
+                  SizedBox(width: 4),
+                  Text(
+                    'Google Maps',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF334155),
+                    ),
                   ),
-                );
-              },
+                ],
+              ),
             ),
           ),
 
@@ -295,298 +455,5 @@ class _CorridorMapWidgetState extends State<CorridorMapWidget>
         ],
       ),
     );
-  }
-}
-
-class _CorridorPainter extends CustomPainter {
-  final double progress;
-  final bool isDeviated;
-  final double pulseValue;
-  final bool showSrsCallouts;
-
-  _CorridorPainter({
-    required this.progress,
-    required this.isDeviated,
-    required this.pulseValue,
-    required this.showSrsCallouts,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // 1. Draw subtle GIS Grid lines
-    final gridPaint = Paint()
-      ..color = const Color(0xFFD3DCE3)
-      ..strokeWidth = 0.5;
-
-    for (double x = 0; x < size.width; x += 30) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
-    }
-    for (double y = 0; y < size.height; y += 30) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
-    }
-
-    // 2. Draw mock water body (Port of Colombo coast) on the left
-    final seaPaint = Paint()..color = const Color(0xFFC7DDF2).withValues(alpha: 0.6);
-    final seaPath = Path()
-      ..moveTo(0, 0)
-      ..lineTo(size.width * 0.22, 0)
-      ..quadraticBezierTo(size.width * 0.14, size.height * 0.5, size.width * 0.26, size.height)
-      ..lineTo(0, size.height)
-      ..close();
-    canvas.drawPath(seaPath, seaPaint);
-
-    // 2b. Secondary roads network (matching Figures 10 and 11)
-    final secRoadPaint = Paint()
-      ..color = const Color(0xFFB0BEC5)
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke;
-
-    final roadNet1 = Path()
-      ..moveTo(size.width * 0.1, size.height * 0.2)
-      ..lineTo(size.width * 0.7, size.height * 0.15)
-      ..lineTo(size.width * 0.95, size.height * 0.4);
-    canvas.drawPath(roadNet1, secRoadPaint);
-
-    final roadNet2 = Path()
-      ..moveTo(size.width * 0.3, size.height * 0.85)
-      ..lineTo(size.width * 0.8, size.height * 0.75)
-      ..lineTo(size.width, size.height * 0.9);
-    canvas.drawPath(roadNet2, secRoadPaint);
-
-    // 3. Define the Highway Route Corridor Curve (Origin Katunayake / Port -> Checkpoint -> Destination)
-    final p0 = Offset(size.width * 0.16, size.height * 0.68);
-    final p1 = Offset(size.width * 0.38, size.height * 0.36);
-    final p2 = Offset(size.width * 0.62, size.height * 0.62);
-    final p3 = Offset(size.width * 0.88, size.height * 0.34);
-
-    final corridorPath = Path()
-      ..moveTo(p0.dx, p0.dy)
-      ..cubicTo(p1.dx, p1.dy, p2.dx, p2.dy, p3.dx, p3.dy);
-
-    // 4. Draw Geofence Buffer Corridor (thick blue band)
-    final bufferPaint = Paint()
-      ..color = isDeviated
-          ? AppTheme.tamperRed.withValues(alpha: 0.18)
-          : const Color(0xFF2563EB).withValues(alpha: 0.25)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 36
-      ..strokeCap = StrokeCap.round;
-    canvas.drawPath(corridorPath, bufferPaint);
-
-    // 5. Draw Primary Navigation Route (Deep Blue Line like in Figure 10 & 11)
-    final routeLinePaint = Paint()
-      ..color = const Color(0xFF1D4ED8)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 6
-      ..strokeCap = StrokeCap.round;
-    canvas.drawPath(corridorPath, routeLinePaint);
-
-    // 6. Draw Waypoint Circles
-    _drawCheckpoint(canvas, p0, 'Katunayake', true);
-    _drawCheckpoint(canvas, Offset(size.width * 0.40, size.height * 0.42), 'Peliyagoda', true);
-    _drawCheckpoint(canvas, Offset(size.width * 0.64, size.height * 0.58), 'Ingurukade', true);
-    _drawCheckpoint(canvas, p3, 'Port Gate 4', false);
-
-    // 7. Draw Segment Time Badges from Figure 10 ("19 min", "18 min", "17 min")
-    if (showSrsCallouts) {
-      _drawTimeBadge(canvas, Offset(size.width * 0.48, size.height * 0.22), '19 min');
-      _drawTimeBadge(canvas, Offset(size.width * 0.52, size.height * 0.45), '18 min');
-      _drawTimeBadge(canvas, Offset(size.width * 0.50, size.height * 0.68), '17 min');
-
-      // Road code tag "AC11"
-      _drawRoadCode(canvas, Offset(size.width * 0.30, size.height * 0.40), 'AC11');
-    }
-
-    // 8. Calculate Vehicle Position on Route based on progress
-    final t = progress.clamp(0.0, 1.0);
-    final oneMinusT = 1.0 - t;
-    final vx = math.pow(oneMinusT, 3) * p0.dx +
-        3 * math.pow(oneMinusT, 2) * t * p1.dx +
-        3 * oneMinusT * math.pow(t, 2) * p2.dx +
-        math.pow(t, 3) * p3.dx;
-    var vy = math.pow(oneMinusT, 3) * p0.dy +
-        3 * math.pow(oneMinusT, 2) * t * p1.dy +
-        3 * oneMinusT * math.pow(t, 2) * p2.dy +
-        math.pow(t, 3) * p3.dy;
-
-    // If simulated deviation is active, shift vehicle off the road corridor!
-    if (isDeviated) {
-      vy -= 42;
-    }
-
-    final vehiclePos = Offset(vx, vy);
-
-    // Draw Pulse Ring around truck
-    final pulsePaint = Paint()
-      ..color = (isDeviated ? AppTheme.tamperRed : const Color(0xFF10B981))
-          .withValues(alpha: (1.0 - pulseValue).clamp(0.0, 1.0) * 0.6)
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(vehiclePos, 12 + (pulseValue * 16), pulsePaint);
-
-    // Draw Green Truck Pin (as in Figures 10 and 11)
-    final truckCirclePaint = Paint()
-      ..color = isDeviated ? AppTheme.tamperRed : const Color(0xFF10B981)
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(vehiclePos, 14, truckCirclePaint);
-
-    final truckBorder = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5;
-    canvas.drawCircle(vehiclePos, 14, truckBorder);
-
-    // Inner icon symbol
-    final iconPaint = Paint()..color = Colors.white;
-    canvas.drawCircle(vehiclePos, 4, iconPaint);
-
-    // In Figure 11: Speech Callout "18 min \n 7.3 km"
-    if (showSrsCallouts && size.width > 260) {
-      _drawTruckCallout(canvas, Offset(vx + 18, vy - 10), '18 min', '7.3 km');
-    }
-
-    // If deviated, draw red dotted line from route to deviated vehicle position
-    if (isDeviated) {
-      final deviationLinePaint = Paint()
-        ..color = AppTheme.tamperRed
-        ..strokeWidth = 2
-        ..style = PaintingStyle.stroke;
-      canvas.drawLine(Offset(vx, vy + 42), vehiclePos, deviationLinePaint);
-    }
-  }
-
-  void _drawTimeBadge(Canvas canvas, Offset pos, String timeText) {
-    const double w = 52;
-    const double h = 20;
-    final rrect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: pos, width: w, height: h),
-      const Radius.circular(4),
-    );
-
-    final bgPaint = Paint()..color = Colors.white;
-    final borderPaint = Paint()
-      ..color = const Color(0xFFCBD5E1)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-
-    canvas.drawRRect(rrect, bgPaint);
-    canvas.drawRRect(rrect, borderPaint);
-
-    final textSpan = TextSpan(
-      text: timeText,
-      style: const TextStyle(
-        color: Color(0xFF1E293B),
-        fontSize: 10,
-        fontWeight: FontWeight.bold,
-      ),
-    );
-    final textPainter = TextPainter(
-      text: textSpan,
-      textDirection: TextDirection.ltr,
-    )..layout();
-    textPainter.paint(
-      canvas,
-      Offset(pos.dx - textPainter.width / 2, pos.dy - textPainter.height / 2),
-    );
-  }
-
-  void _drawRoadCode(Canvas canvas, Offset pos, String code) {
-    const double w = 36;
-    const double h = 18;
-    final rrect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: pos, width: w, height: h),
-      const Radius.circular(4),
-    );
-
-    final bgPaint = Paint()..color = const Color(0xFF10B981);
-    canvas.drawRRect(rrect, bgPaint);
-
-    final textSpan = TextSpan(
-      text: code,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 9,
-        fontWeight: FontWeight.bold,
-      ),
-    );
-    final textPainter = TextPainter(
-      text: textSpan,
-      textDirection: TextDirection.ltr,
-    )..layout();
-    textPainter.paint(
-      canvas,
-      Offset(pos.dx - textPainter.width / 2, pos.dy - textPainter.height / 2),
-    );
-  }
-
-  void _drawTruckCallout(Canvas canvas, Offset pos, String duration, String distance) {
-    const double w = 84;
-    const double h = 38;
-    final rect = Rect.fromLTWH(pos.dx, pos.dy - h / 2, w, h);
-    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(6));
-
-    final shadowPaint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.15)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-    canvas.drawRRect(rrect.shift(const Offset(0, 2)), shadowPaint);
-
-    final bgPaint = Paint()..color = Colors.white;
-    final borderPaint = Paint()
-      ..color = const Color(0xFF334155)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2;
-
-    canvas.drawRRect(rrect, bgPaint);
-    canvas.drawRRect(rrect, borderPaint);
-
-    // Left green truck circle
-    final iconCircle = Paint()..color = const Color(0xFF10B981);
-    canvas.drawCircle(Offset(pos.dx + 16, pos.dy), 10, iconCircle);
-
-    // Text: Duration & Distance
-    final span = TextSpan(
-      children: [
-        TextSpan(
-          text: '$duration\n',
-          style: const TextStyle(
-            color: Color(0xFF0F172A),
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        TextSpan(
-          text: distance,
-          style: const TextStyle(
-            color: Color(0xFF64748B),
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
-    );
-
-    final tp = TextPainter(
-      text: span,
-      textDirection: TextDirection.ltr,
-    )..layout();
-    tp.paint(canvas, Offset(pos.dx + 30, pos.dy - tp.height / 2));
-  }
-
-  void _drawCheckpoint(Canvas canvas, Offset pos, String label, bool isPassed) {
-    final bgPaint = Paint()..color = isPassed ? const Color(0xFF1D4ED8) : Colors.white;
-    final borderPaint = Paint()
-      ..color = isPassed ? Colors.white : const Color(0xFF1E293B)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-
-    canvas.drawCircle(pos, 5, bgPaint);
-    canvas.drawCircle(pos, 5, borderPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _CorridorPainter oldDelegate) {
-    return oldDelegate.progress != progress ||
-        oldDelegate.isDeviated != isDeviated ||
-        oldDelegate.pulseValue != pulseValue ||
-        oldDelegate.showSrsCallouts != showSrsCallouts;
   }
 }

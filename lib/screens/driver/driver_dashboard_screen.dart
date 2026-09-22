@@ -13,6 +13,7 @@ import 'tabs/driver_trip_tab.dart';
 import 'widgets/incident_report_dialog.dart';
 import 'widgets/inspection_checklist_dialog.dart';
 import 'widgets/sos_dialog.dart';
+import '../welcome_screen.dart';
 
 class DriverDashboardScreen extends StatefulWidget {
   const DriverDashboardScreen({super.key});
@@ -32,7 +33,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
 
   final List<String> _recentAlerts = [
     'Pre-trip clearance verified by Customs Control Unit',
-    'Customs Corridor Alpha: GPS lock continuous (11 Satellites)',
+    'Colombo Fort to Orugodawaththa: GPS lock continuous (11 Satellites)',
     'Geofence Checkpoint: Totalanga Elevated Flyover cleared',
     'Driver Safety Rating: 4.96 ★ (Authorized Customs Haulier)',
   ];
@@ -232,6 +233,36 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
     );
   }
 
+  void _showLogoutConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Confirm Sign Out'),
+        content: const Text(
+          'Are you sure you want to sign out of the Driver Dashboard?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: const Color(0xFFDC2626)),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+                (route) => false,
+              );
+            },
+            child: const Text('Sign Out'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -279,6 +310,31 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                 // Tab 2: Figure 12 (Mobile Notification Page)
                 DriverAlertsTab(
                   additionalAlerts: _recentAlerts,
+                  onNavigateToSection: (targetIndex, alertTitle, sectionName) {
+                    setState(() {
+                      _currentTabIndex = targetIndex;
+                    });
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Row(
+                          children: [
+                            const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Navigated to $sectionName for "$alertTitle"',
+                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                              ),
+                            ),
+                          ],
+                        ),
+                        backgroundColor: const Color(0xFF0E3352),
+                        behavior: SnackBarBehavior.floating,
+                        duration: const Duration(milliseconds: 2200),
+                      ),
+                    );
+                  },
                 ),
 
                 // Tab 3: Figure 13 (Mobile Trip Details)
@@ -362,7 +418,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
     switch (_currentTabIndex) {
       case 0: // Figure 10: Mobile Home Screen
         title = 'Driver Navigation Module';
-        subtitle = 'Good Morning • Customs Transport';
+        subtitle = null;
         break;
       case 2: // Figure 12: Notifications
         title = 'Notifications';
@@ -373,12 +429,12 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
         subtitle = 'Current journey information';
         break;
       case 4: // Figure 14: Profile
-        title = 'Matheesha';
-        subtitle = 'Driver Profile • Customs Transport';
+        title = 'Driver Profile';
+        subtitle = null;
         break;
       default:
         title = 'Driver Navigation Module';
-        subtitle = 'Good Morning';
+        subtitle = null;
     }
 
     return SrsCurvedHeader(
@@ -403,6 +459,13 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                   size: 18, color: Colors.white),
             ),
             onPressed: _showSosDialog,
+          ),
+          const SizedBox(width: 4),
+          // Quick Logout Button
+          IconButton(
+            tooltip: 'Logout',
+            icon: const Icon(Icons.logout_rounded, size: 20, color: Colors.white),
+            onPressed: () => _showLogoutConfirmation(context),
           ),
           const SizedBox(width: 4),
           // User Avatar Button (Figure 10)

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../models/container_model.dart';
 import '../../services/auth_service.dart';
+import '../../utils/alert_navigation_helper.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/corridor_map_widget.dart';
 import '../../widgets/sensor_telemetry_card.dart';
 import '../../widgets/srs_curved_header.dart';
-import '../login_screen.dart';
+import '../welcome_screen.dart';
 
 class ContainerOwnerDashboardScreen extends StatefulWidget {
   const ContainerOwnerDashboardScreen({super.key});
@@ -46,14 +47,14 @@ class _ContainerOwnerDashboardScreenState
     },
     {
       'title': 'Traffic Alert',
-      'body': 'Heavy traffic detected ahead near Peliyagoda, adding 20 min to ETA.',
+      'body': 'Moderate traffic detected ahead near Orugodawaththa, adding 5 min to ETA.',
       'time': '3 hours ago',
       'isUnread': false,
       'type': 'warning',
     },
     {
       'title': 'Container Sealed & Departed',
-      'body': 'CMAU-821904-2 sealed with RFID SL-RFID-98103 and departed Colombo Port JCT Terminal under Customs tracking.',
+      'body': 'CMAU-821904-2 sealed with RFID SL-RFID-98103 and departed Colombo Fort under Customs tracking.',
       'time': '4 hours ago',
       'isUnread': false,
       'type': 'info',
@@ -105,7 +106,7 @@ class _ContainerOwnerDashboardScreenState
         _alerts.insert(0, {
           'title': 'Route Deviation Alert',
           'body':
-              'Container ${_selectedContainer.containerNumber} has deviated 72 m outside Corridor Alpha geofence.',
+              'Container ${_selectedContainer.containerNumber} has deviated 45 m outside ${_selectedContainer.designatedCorridor} geofence.',
           'time': 'Just now',
           'isUnread': true,
           'type': 'warning',
@@ -131,7 +132,7 @@ class _ContainerOwnerDashboardScreenState
             onPressed: () {
               Navigator.of(ctx).pop();
               Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                MaterialPageRoute(builder: (_) => const WelcomeScreen()),
                 (route) => false,
               );
             },
@@ -300,6 +301,48 @@ class _ContainerOwnerDashboardScreenState
     );
   }
 
+  Widget _buildOwnerStatTile({
+    required String value,
+    required String label,
+    required IconData icon,
+    required Color color,
+    required Color bg,
+  }) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withValues(alpha: 0.15)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(height: 6),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 19,
+                fontWeight: FontWeight.w800,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 11,
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ── Tab 0: Figure 10 (Home Screen for Owner) ─────────────────────────
   Widget _buildHomeTab() {
     return SingleChildScrollView(
@@ -307,9 +350,9 @@ class _ContainerOwnerDashboardScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Fleet Container Selector
+          // Fleet Container Selector (Elevated Pill Carousel)
           SizedBox(
-            height: 38,
+            height: 42,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: _containers.length,
@@ -318,9 +361,18 @@ class _ContainerOwnerDashboardScreenState
                 final c = _containers[index];
                 final isSelected = c.containerNumber == _selectedContainer.containerNumber;
                 return ChoiceChip(
+                  avatar: Icon(
+                    Icons.inventory_2_rounded,
+                    size: 16,
+                    color: isSelected ? Colors.white : const Color(0xFF2563EB),
+                  ),
                   label: Text(c.containerNumber),
                   selected: isSelected,
                   selectedColor: const Color(0xFF0E3352),
+                  backgroundColor: Colors.white,
+                  side: BorderSide(
+                    color: isSelected ? const Color(0xFF0E3352) : const Color(0xFFE2E8F0),
+                  ),
                   labelStyle: TextStyle(
                     color: isSelected ? Colors.white : const Color(0xFF334155),
                     fontWeight: FontWeight.bold,
@@ -345,8 +397,8 @@ class _ContainerOwnerDashboardScreenState
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
+                  blurRadius: 14,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
@@ -357,27 +409,49 @@ class _ContainerOwnerDashboardScreenState
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Current Trip',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E293B),
-                      ),
+                    const Row(
+                      children: [
+                        Icon(Icons.directions_boat_outlined, size: 20, color: Color(0xFF0E3352)),
+                        SizedBox(width: 8),
+                        Text(
+                          'Current Trip',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E293B),
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ],
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                       decoration: BoxDecoration(
                         color: const Color(0xFFDCFCE7),
                         borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFF86EFAC)),
                       ),
-                      child: const Text(
-                        'On Route',
-                        style: TextStyle(
-                          color: Color(0xFF15803D),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 7,
+                            height: 7,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF16A34A),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            'On Route',
+                            style: TextStyle(
+                              color: Color(0xFF15803D),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -386,102 +460,182 @@ class _ContainerOwnerDashboardScreenState
                 Row(
                   children: [
                     Container(
-                      width: 38,
-                      height: 38,
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFEFF6FF), Color(0xFFDBEAFE)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
                         borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFBFDBFE)),
                       ),
                       child: const Icon(
-                        Icons.location_on_outlined,
+                        Icons.inventory_2_outlined,
                         color: Color(0xFF2563EB),
                         size: 20,
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Container ID',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFF64748B),
-                            fontWeight: FontWeight.w500,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Container ID',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF64748B),
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                        Text(
-                          _selectedContainer.containerNumber,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E293B),
+                          Text(
+                            _selectedContainer.containerNumber,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1E293B),
+                              letterSpacing: 0.3,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.shield_rounded, size: 14, color: Color(0xFF10B981)),
+                          const SizedBox(width: 4),
+                          Text(
+                            _selectedContainer.securityStatus == ContainerSecurityStatus.secure ? 'Secured' : 'Alert',
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 14),
                 // Embedded Route Map
-                GestureDetector(
-                  onTap: () => setState(() => _currentTabIndex = 1),
-                  child: CorridorMapWidget(
-                    corridorTitle: 'Colombo Customs Corridor Alpha',
-                    originTitle: 'Katunayake',
-                    destinationTitle: 'Port of Colombo',
-                    progress: 0.60,
-                    isDeviated: _isDeviated,
-                    deviationMeters: _isDeviated ? 72.0 : 0.0,
-                    speedKmH: 42,
-                    height: 180,
-                    showSrsCallouts: true,
-                    showTopStatusOverlay: false,
-                    onToggleDeviation: _toggleDeviation,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _currentTabIndex = 1),
+                    child: CorridorMapWidget(
+                      corridorTitle: _selectedContainer.designatedCorridor,
+                      originTitle: _selectedContainer.originPort,
+                      destinationTitle: _selectedContainer.destinationDepot,
+                      progress: 0.60,
+                      isDeviated: _isDeviated,
+                      deviationMeters: _isDeviated ? 72.0 : 0.0,
+                      speedKmH: 42,
+                      height: 180,
+                      showSrsCallouts: true,
+                      showTopStatusOverlay: false,
+                      onToggleDeviation: _toggleDeviation,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 14),
                 // Distance Left & ETA (Figure 10)
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                Row(
                   children: [
-                    Column(
-                      children: [
-                        Text(
-                          'Distance Left',
-                          style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
                         ),
-                        SizedBox(height: 4),
-                        Text(
-                          '142 km',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF0F172A),
-                          ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEFF6FF),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(Icons.near_me_rounded, color: Color(0xFF2563EB), size: 18),
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Distance Left',
+                                  style: TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
+                                ),
+                                Text(
+                                  _selectedContainer.destinationDepot.contains('Grayline 1')
+                                      ? '4.2 km'
+                                      : (_selectedContainer.destinationDepot.contains('Grayline 2')
+                                          ? '5.1 km'
+                                          : '3.3 km'),
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                    SizedBox(
-                      height: 30,
-                      child: VerticalDivider(color: Color(0xFFE2E8F0)),
-                    ),
-                    Column(
-                      children: [
-                        Text(
-                          'ETA',
-                          style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
                         ),
-                        SizedBox(height: 4),
-                        Text(
-                          '2h 30m',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF0F172A),
-                          ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFEF3C7),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(Icons.access_time_filled_rounded, color: Color(0xFFD97706), size: 18),
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'ETA',
+                                  style: TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
+                                ),
+                                Text(
+                                  _selectedContainer.destinationDepot.contains('Grayline 1')
+                                      ? '12 min'
+                                      : (_selectedContainer.destinationDepot.contains('Grayline 2')
+                                          ? '15 min'
+                                          : '18 min'),
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
@@ -500,89 +654,61 @@ class _ContainerOwnerDashboardScreenState
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
+                  blurRadius: 14,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
             padding: const EdgeInsets.all(18),
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Quick Stats',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E293B),
-                  ),
-                ),
-                SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      children: [
-                        Text(
-                          '24',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF0F172A),
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Total Trips',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF64748B),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      'Quick Stats',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E293B),
+                      ),
                     ),
-                    Column(
-                      children: [
-                        Text(
-                          '98%',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF10B981),
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'On-Time',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF64748B),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      'Cargo Fleet Summary',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF64748B),
+                      ),
                     ),
-                    Column(
-                      children: [
-                        Text(
-                          '3.2k',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF3B82F6),
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'km Total',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF64748B),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    _buildOwnerStatTile(
+                      value: '24',
+                      label: 'Total Trips',
+                      icon: Icons.local_shipping_outlined,
+                      color: const Color(0xFF0F2537),
+                      bg: const Color(0xFFF1F5F9),
+                    ),
+                    const SizedBox(width: 10),
+                    _buildOwnerStatTile(
+                      value: '98%',
+                      label: 'On-Time',
+                      icon: Icons.verified_outlined,
+                      color: const Color(0xFF10B981),
+                      bg: const Color(0xFFECFDF5),
+                    ),
+                    const SizedBox(width: 10),
+                    _buildOwnerStatTile(
+                      value: '3.2k',
+                      label: 'km Total',
+                      icon: Icons.route_outlined,
+                      color: const Color(0xFF3B82F6),
+                      bg: const Color(0xFFEFF6FF),
                     ),
                   ],
                 ),
@@ -598,27 +724,46 @@ class _ContainerOwnerDashboardScreenState
             borderRadius: BorderRadius.circular(16),
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
               decoration: BoxDecoration(
-                color: const Color(0xFFFDE8E8),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFFF1F2), Color(0xFFFEE2E2)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFF87171), width: 1.2),
+                border: Border.all(color: const Color(0xFFFCA5A5), width: 1.2),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.10),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.notifications_none_rounded,
-                    color: Color(0xFFEF4444),
-                    size: 22,
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFEF4444),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.notifications_active_rounded,
+                      color: Colors.white,
+                      size: 16,
+                    ),
                   ),
-                  SizedBox(width: 8),
-                  Text(
+                  const SizedBox(width: 10),
+                  const Text(
                     'Emergency Alert',
                     style: TextStyle(
-                      color: Color(0xFFEF4444),
+                      color: Color(0xFFDC2626),
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
+                      letterSpacing: 0.3,
                     ),
                   ),
                 ],
@@ -644,9 +789,9 @@ class _ContainerOwnerDashboardScreenState
       children: [
         Positioned.fill(
           child: CorridorMapWidget(
-            corridorTitle: 'Customs Corridor Alpha (Peliyagoda Bypass)',
-            originTitle: 'Katunayake',
-            destinationTitle: 'Port of Colombo',
+            corridorTitle: _selectedContainer.designatedCorridor,
+            originTitle: _selectedContainer.originPort,
+            destinationTitle: _selectedContainer.destinationDepot,
             progress: 0.60,
             isDeviated: _isDeviated,
             deviationMeters: _isDeviated ? 72.0 : 0.0,
@@ -680,13 +825,13 @@ class _ContainerOwnerDashboardScreenState
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Destination',
                           style: TextStyle(
                             fontSize: 12,
@@ -694,10 +839,10 @@ class _ContainerOwnerDashboardScreenState
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        SizedBox(height: 2),
+                        const SizedBox(height: 2),
                         Text(
-                          'Port of Colombo',
-                          style: TextStyle(
+                          _selectedContainer.destinationDepot,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF0F172A),
@@ -708,7 +853,7 @@ class _ContainerOwnerDashboardScreenState
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(
+                        const Text(
                           'ETA',
                           style: TextStyle(
                             fontSize: 12,
@@ -716,10 +861,14 @@ class _ContainerOwnerDashboardScreenState
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        SizedBox(height: 2),
+                        const SizedBox(height: 2),
                         Text(
-                          '2h 30m',
-                          style: TextStyle(
+                          _selectedContainer.destinationDepot.contains('Grayline 1')
+                              ? '12 min'
+                              : (_selectedContainer.destinationDepot.contains('Grayline 2')
+                                  ? '15 min'
+                                  : '18 min'),
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF0F172A),
@@ -744,9 +893,13 @@ class _ContainerOwnerDashboardScreenState
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Text(
-                      '142 km',
-                      style: TextStyle(
+                    Text(
+                      _selectedContainer.destinationDepot.contains('Grayline 1')
+                          ? '4.2 km'
+                          : (_selectedContainer.destinationDepot.contains('Grayline 2')
+                              ? '5.1 km'
+                              : '6.8 km'),
+                      style: const TextStyle(
                         fontSize: 12,
                         color: Color(0xFF64748B),
                         fontWeight: FontWeight.w600,
@@ -866,6 +1019,25 @@ class _ContainerOwnerDashboardScreenState
     );
   }
 
+  void _handleAlertTap(Map<String, dynamic> alert) {
+    setState(() {
+      alert['isUnread'] = false;
+    });
+
+    final title = alert['title'] as String;
+    final body = alert['body'] as String;
+    final target = AlertNavigationHelper.resolveAlertOrigin(title, body, role: 'owner');
+
+    AlertNavigationHelper.navigateToOriginSection(
+      context: context,
+      target: target,
+      alertTitle: title,
+      onTabSelected: (idx) {
+        setState(() => _currentTabIndex = idx);
+      },
+    );
+  }
+
   // ── Tab 2: Figure 12 (Notifications / Alerts Page) ───────────────────
   Widget _buildAlertsTab() {
     return ListView.builder(
@@ -875,6 +1047,10 @@ class _ContainerOwnerDashboardScreenState
         final alert = _alerts[index];
         final type = alert['type'] as String? ?? 'info';
         final isUnread = alert['isUnread'] as bool? ?? false;
+        final title = alert['title'] as String;
+        final body = alert['body'] as String;
+
+        final target = AlertNavigationHelper.resolveAlertOrigin(title, body, role: 'owner');
 
         Color iconBg;
         Color iconColor;
@@ -906,90 +1082,148 @@ class _ContainerOwnerDashboardScreenState
 
         return Container(
           margin: const EdgeInsets.only(bottom: 14),
-          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(
+              color: isUnread ? const Color(0xFFBFDBFE) : const Color(0xFFE2E8F0),
+              width: isUnread ? 1.5 : 1.0,
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
+                color: isUnread
+                    ? const Color(0xFF2563EB).withValues(alpha: 0.06)
+                    : Colors.black.withValues(alpha: 0.03),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
             ],
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: iconBg,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: iconColor, size: 22),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () => _handleAlertTap(alert),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          alert['title'] as String,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF0F172A),
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: iconBg,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(icon, color: iconColor, size: 22),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  title,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                ),
+                              ),
+                              if (isUnread)
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF2563EB),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                            ],
                           ),
-                        ),
-                        if (isUnread)
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF2563EB),
-                              shape: BoxShape.circle,
+                          const SizedBox(height: 4),
+                          Text(
+                            body,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF475569),
+                              height: 1.35,
                             ),
                           ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      alert['body'] as String,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF475569),
-                        height: 1.35,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.access_time_rounded,
-                          size: 13,
-                          color: Color(0xFF94A3B8),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          alert['time'] as String,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFF94A3B8),
-                            fontWeight: FontWeight.w500,
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.access_time_rounded,
+                                    size: 13,
+                                    color: Color(0xFF94A3B8),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    alert['time'] as String,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Color(0xFF94A3B8),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEFF6FF),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: const Color(0xFFBFDBFE)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      target.sectionIcon,
+                                      size: 12,
+                                      color: const Color(0xFF2563EB),
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      target.actionBadgeText,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF2563EB),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 3),
+                                    const Icon(
+                                      Icons.arrow_forward_ios_rounded,
+                                      size: 9,
+                                      color: Color(0xFF2563EB),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
         );
       },
@@ -1156,38 +1390,42 @@ class _ContainerOwnerDashboardScreenState
                       ],
                     ),
                     const SizedBox(width: 14),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'Start Location',
                             style: TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
                           ),
-                          SizedBox(height: 2),
+                          const SizedBox(height: 2),
                           Text(
-                            'Katunayake Export Processing Zone',
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                            _selectedContainer.originPort,
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
                           ),
-                          SizedBox(height: 2),
-                          Text(
-                            'Started: Today at 6:00 AM',
+                          const SizedBox(height: 2),
+                          const Text(
+                            'Started: Today at 8:45 AM',
                             style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
                           ),
-                          SizedBox(height: 20),
-                          Text(
+                          const SizedBox(height: 20),
+                          const Text(
                             'Destination',
                             style: TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
                           ),
-                          SizedBox(height: 2),
+                          const SizedBox(height: 2),
                           Text(
-                            'Port of Colombo',
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                            _selectedContainer.destinationDepot,
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
                           ),
-                          SizedBox(height: 2),
+                          const SizedBox(height: 2),
                           Text(
-                            'Expected: Today at 11:30 AM',
-                            style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+                            _selectedContainer.destinationDepot.contains('Grayline 1')
+                                ? 'Expected: Today at 9:15 AM'
+                                : (_selectedContainer.destinationDepot.contains('Grayline 2')
+                                    ? 'Expected: Today at 9:25 AM'
+                                    : 'Expected: Today at 9:35 AM'),
+                            style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
                           ),
                         ],
                       ),

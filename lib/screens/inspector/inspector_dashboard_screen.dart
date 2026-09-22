@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../models/shipment_model.dart';
+import '../../models/trip_model.dart';
 import '../../services/auth_service.dart';
+import '../../utils/alert_navigation_helper.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/corridor_map_widget.dart';
 import '../../widgets/srs_curved_header.dart';
-import '../login_screen.dart';
+import '../welcome_screen.dart';
 
 class InspectorDashboardScreen extends StatefulWidget {
   const InspectorDashboardScreen({super.key});
@@ -16,6 +18,7 @@ class InspectorDashboardScreen extends StatefulWidget {
 
 class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
   int _currentTabIndex = 0;
+  int _selectedNavigateRouteIndex = 0;
 
   final ShipmentInfo _activeShipment = ShipmentInfo.mockActiveShipment;
 
@@ -25,7 +28,7 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
   final _iotDeviceIdController = TextEditingController(text: 'ST-ESP32-124');
   final _rfidLockController = TextEditingController(text: 'SL-RFID-99480');
   final _cusDecController = TextEditingController(text: 'CD-2026-COL-0914');
-  final String _selectedCorridor = 'Corridor Alpha (Port - Orugodawatta ICD)';
+  String _selectedCorridor = 'Colombo Fort to Orugodawaththa';
   bool _isArming = false;
 
   // Stage 4 Disarm Form Controllers
@@ -49,7 +52,7 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
   final List<Map<String, dynamic>> _alerts = [
     {
       'title': 'Route Deviation',
-      'body': 'Container HLCU-902184-5 deviated from the approved corridor 15 minutes ago.',
+      'body': 'Container HLCU-902184-5 deviated from Colombo Fort to Grayline 2 corridor 15 minutes ago.',
       'time': '15 min ago',
       'isUnread': true,
       'type': 'warning',
@@ -63,14 +66,14 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
     },
     {
       'title': 'Checkpoint Passed',
-      'body': 'Container MSCU-742910-8 cleared Checkpoint #3 (Ingurukade Flyover).',
+      'body': 'Container MSCU-742910-8 cleared Checkpoint #3 (Ingurukade Junction).',
       'time': '2 hours ago',
       'isUnread': false,
       'type': 'success',
     },
     {
       'title': 'Traffic Alert',
-      'body': 'Heavy traffic detected ahead near Peliyagoda junction, adding 20 min to ETA.',
+      'body': 'Moderate traffic detected near Orugodawaththa junction, adding 5 min to ETA.',
       'time': '3 hours ago',
       'isUnread': false,
       'type': 'warning',
@@ -93,7 +96,7 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
       if (_isDeviated) {
         _alerts.insert(0, {
           'title': '🚨 GEOPATH VIOLATION',
-          'body': 'Vehicle deviated 72 m from Corridor Alpha! Customs Patrol Unit dispatched.',
+          'body': 'Vehicle deviated 72 m from Colombo Fort to Orugodawaththa! Customs Patrol Unit dispatched.',
           'time': 'Just now',
           'isUnread': true,
           'type': 'danger',
@@ -181,7 +184,7 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
             onPressed: () {
               Navigator.of(ctx).pop();
               Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                MaterialPageRoute(builder: (_) => const WelcomeScreen()),
                 (route) => false,
               );
             },
@@ -346,6 +349,48 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
     );
   }
 
+  Widget _buildInspectorStatTile({
+    required String value,
+    required String label,
+    required IconData icon,
+    required Color color,
+    required Color bg,
+  }) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withValues(alpha: 0.15)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(height: 6),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 19,
+                fontWeight: FontWeight.w800,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 11,
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ── Tab 0: Figure 10 (Home Screen for Inspector) ─────────────────────
   Widget _buildHomeTab() {
     return SingleChildScrollView(
@@ -362,8 +407,8 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
+                  blurRadius: 14,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
@@ -374,27 +419,49 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Current Trip',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E293B),
-                      ),
+                    const Row(
+                      children: [
+                        Icon(Icons.shield_outlined, size: 20, color: Color(0xFF0E3352)),
+                        SizedBox(width: 8),
+                        Text(
+                          'Current Trip',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E293B),
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ],
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                       decoration: BoxDecoration(
                         color: const Color(0xFFDCFCE7),
                         borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFF86EFAC)),
                       ),
-                      child: const Text(
-                        'On Route',
-                        style: TextStyle(
-                          color: Color(0xFF15803D),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 7,
+                            height: 7,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF16A34A),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            'On Route',
+                            style: TextStyle(
+                              color: Color(0xFF15803D),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -403,102 +470,174 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
                 Row(
                   children: [
                     Container(
-                      width: 38,
-                      height: 38,
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFEFF6FF), Color(0xFFDBEAFE)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
                         borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFBFDBFE)),
                       ),
                       child: const Icon(
-                        Icons.location_on_outlined,
+                        Icons.local_shipping_outlined,
                         color: Color(0xFF2563EB),
                         size: 20,
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Container ID',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFF64748B),
-                            fontWeight: FontWeight.w500,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Container ID',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF64748B),
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                        Text(
-                          _activeShipment.containerNumber,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E293B),
+                          Text(
+                            _activeShipment.containerNumber,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1E293B),
+                              letterSpacing: 0.3,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.verified_user_rounded, size: 14, color: Color(0xFF10B981)),
+                          SizedBox(width: 4),
+                          Text(
+                            'Seal Active',
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 14),
                 // Embedded Route Map with callouts (Figure 10)
-                GestureDetector(
-                  onTap: () => setState(() => _currentTabIndex = 1),
-                  child: CorridorMapWidget(
-                    corridorTitle: 'Customs Corridor Alpha (Peliyagoda Bypass)',
-                    originTitle: 'Katunayake',
-                    destinationTitle: 'Port of Colombo',
-                    progress: 0.60,
-                    isDeviated: _isDeviated,
-                    deviationMeters: _isDeviated ? 72.0 : 0.0,
-                    speedKmH: 42,
-                    height: 180,
-                    showSrsCallouts: true,
-                    showTopStatusOverlay: false,
-                    onToggleDeviation: _toggleDeviation,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _currentTabIndex = 1),
+                    child: CorridorMapWidget(
+                      corridorTitle: 'Colombo Fort to Orugodawaththa',
+                      originTitle: 'Colombo Fort',
+                      destinationTitle: 'Orugodawaththa',
+                      progress: 0.60,
+                      isDeviated: _isDeviated,
+                      deviationMeters: _isDeviated ? 72.0 : 0.0,
+                      speedKmH: 42,
+                      height: 180,
+                      showSrsCallouts: true,
+                      showTopStatusOverlay: false,
+                      onToggleDeviation: _toggleDeviation,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 14),
                 // Distance Left & ETA (Figure 10)
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                Row(
                   children: [
-                    Column(
-                      children: [
-                        Text(
-                          'Distance Left',
-                          style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
                         ),
-                        SizedBox(height: 4),
-                        Text(
-                          '142 km',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF0F172A),
-                          ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEFF6FF),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(Icons.near_me_rounded, color: Color(0xFF2563EB), size: 18),
+                            ),
+                            const SizedBox(width: 10),
+                            const Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Distance Left',
+                                  style: TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
+                                ),
+                                Text(
+                                  '3.3 km',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                    SizedBox(
-                      height: 30,
-                      child: VerticalDivider(color: Color(0xFFE2E8F0)),
-                    ),
-                    Column(
-                      children: [
-                        Text(
-                          'ETA',
-                          style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
                         ),
-                        SizedBox(height: 4),
-                        Text(
-                          '2h 30m',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF0F172A),
-                          ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFEF3C7),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(Icons.access_time_filled_rounded, color: Color(0xFFD97706), size: 18),
+                            ),
+                            const SizedBox(width: 10),
+                            const Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'ETA',
+                                  style: TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
+                                ),
+                                Text(
+                                  '18 min',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
@@ -517,89 +656,61 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
+                  blurRadius: 14,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
             padding: const EdgeInsets.all(18),
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Quick Stats',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E293B),
-                  ),
-                ),
-                SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      children: [
-                        Text(
-                          '24',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF0F172A),
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Total Trips',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF64748B),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      'Quick Stats',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E293B),
+                      ),
                     ),
-                    Column(
-                      children: [
-                        Text(
-                          '98%',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF10B981),
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'On-Time',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF64748B),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      'Patrol Shift',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF64748B),
+                      ),
                     ),
-                    Column(
-                      children: [
-                        Text(
-                          '3.2k',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF3B82F6),
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'km Total',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF64748B),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    _buildInspectorStatTile(
+                      value: '24',
+                      label: 'Total Trips',
+                      icon: Icons.local_shipping_outlined,
+                      color: const Color(0xFF0F2537),
+                      bg: const Color(0xFFF1F5F9),
+                    ),
+                    const SizedBox(width: 10),
+                    _buildInspectorStatTile(
+                      value: '98%',
+                      label: 'On-Time',
+                      icon: Icons.verified_outlined,
+                      color: const Color(0xFF10B981),
+                      bg: const Color(0xFFECFDF5),
+                    ),
+                    const SizedBox(width: 10),
+                    _buildInspectorStatTile(
+                      value: '3.2k',
+                      label: 'km Total',
+                      icon: Icons.route_outlined,
+                      color: const Color(0xFF3B82F6),
+                      bg: const Color(0xFFEFF6FF),
                     ),
                   ],
                 ),
@@ -623,27 +734,46 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
             borderRadius: BorderRadius.circular(16),
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
               decoration: BoxDecoration(
-                color: const Color(0xFFFDE8E8),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFFF1F2), Color(0xFFFEE2E2)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFF87171), width: 1.2),
+                border: Border.all(color: const Color(0xFFFCA5A5), width: 1.2),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.10),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.notifications_none_rounded,
-                    color: Color(0xFFEF4444),
-                    size: 22,
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFEF4444),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.notifications_active_rounded,
+                      color: Colors.white,
+                      size: 16,
+                    ),
                   ),
-                  SizedBox(width: 8),
-                  Text(
+                  const SizedBox(width: 10),
+                  const Text(
                     'Emergency Alert',
                     style: TextStyle(
-                      color: Color(0xFFEF4444),
+                      color: Color(0xFFDC2626),
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
+                      letterSpacing: 0.3,
                     ),
                   ),
                 ],
@@ -706,13 +836,15 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
 
   // ── Tab 1: Figure 11 (Corridor Monitor Screen) ───────────────────────
   Widget _buildNavigateTab() {
+    final activeRoute = kApprovedRoutes[_selectedNavigateRouteIndex];
+
     return Stack(
       children: [
         Positioned.fill(
           child: CorridorMapWidget(
-            corridorTitle: 'Customs Corridor Alpha (Peliyagoda Bypass)',
-            originTitle: 'Katunayake',
-            destinationTitle: 'Port of Colombo',
+            corridorTitle: activeRoute.name,
+            originTitle: activeRoute.origin,
+            destinationTitle: activeRoute.destination,
             progress: 0.60,
             isDeviated: _isDeviated,
             deviationMeters: _isDeviated ? 72.0 : 0.0,
@@ -724,13 +856,13 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
           ),
         ),
 
-        // Floating Top Destination Card (Figure 11)
+        // Floating Top Destination Card with 3 Routes Selector (Figure 11)
         Positioned(
           top: 16,
           left: 16,
           right: 16,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
@@ -746,13 +878,56 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Row(
+                // 3 Routes Segmented Selector
+                Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: List.generate(kApprovedRoutes.length, (index) {
+                      final r = kApprovedRoutes[index];
+                      final isSelected = index == _selectedNavigateRouteIndex;
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedNavigateRouteIndex = index;
+                            });
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isSelected ? const Color(0xFF0E3352) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              r.destination,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                color: isSelected ? Colors.white : const Color(0xFF64748B),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Destination',
                           style: TextStyle(
                             fontSize: 12,
@@ -760,10 +935,10 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        SizedBox(height: 2),
+                        const SizedBox(height: 2),
                         Text(
-                          'Port of Colombo',
-                          style: TextStyle(
+                          activeRoute.destination,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF0F172A),
@@ -774,7 +949,7 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(
+                        const Text(
                           'ETA',
                           style: TextStyle(
                             fontSize: 12,
@@ -782,10 +957,10 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        SizedBox(height: 2),
+                        const SizedBox(height: 2),
                         Text(
-                          '2h 30m',
-                          style: TextStyle(
+                          '${activeRoute.defaultEtaMinutes} min',
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF0F172A),
@@ -795,7 +970,7 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(
@@ -810,9 +985,9 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Text(
-                      '142 km',
-                      style: TextStyle(
+                    Text(
+                      '${activeRoute.totalDistanceKm} km',
+                      style: const TextStyle(
                         fontSize: 12,
                         color: Color(0xFF64748B),
                         fontWeight: FontWeight.w600,
@@ -866,10 +1041,10 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
                           ),
                         ),
                         const SizedBox(width: 14),
-                        const Column(
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Next Checkpoint',
                               style: TextStyle(
                                 fontSize: 16,
@@ -877,10 +1052,10 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
                                 color: Color(0xFF0F172A),
                               ),
                             ),
-                            SizedBox(height: 2),
+                            const SizedBox(height: 2),
                             Text(
-                              'In 2.3 km (Totalanga Flyover)',
-                              style: TextStyle(
+                              activeRoute.nextTurnDistance,
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: Color(0xFF64748B),
                                 fontWeight: FontWeight.w500,
@@ -891,9 +1066,9 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      'Turn right onto A1 Highway',
-                      style: TextStyle(
+                    Text(
+                      activeRoute.nextTurnInstruction,
+                      style: const TextStyle(
                         fontSize: 13,
                         color: Color(0xFF475569),
                         fontWeight: FontWeight.w600,
@@ -930,6 +1105,25 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
     );
   }
 
+  void _handleAlertTap(Map<String, dynamic> alert) {
+    setState(() {
+      alert['isUnread'] = false;
+    });
+
+    final title = alert['title'] as String;
+    final body = alert['body'] as String;
+    final target = AlertNavigationHelper.resolveAlertOrigin(title, body, role: 'inspector');
+
+    AlertNavigationHelper.navigateToOriginSection(
+      context: context,
+      target: target,
+      alertTitle: title,
+      onTabSelected: (idx) {
+        setState(() => _currentTabIndex = idx);
+      },
+    );
+  }
+
   // ── Tab 2: Figure 12 (Notifications / Alerts Page) ───────────────────
   Widget _buildAlertsTab() {
     return ListView.builder(
@@ -939,6 +1133,10 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
         final alert = _alerts[index];
         final type = alert['type'] as String? ?? 'info';
         final isUnread = alert['isUnread'] as bool? ?? false;
+        final title = alert['title'] as String;
+        final body = alert['body'] as String;
+
+        final target = AlertNavigationHelper.resolveAlertOrigin(title, body, role: 'inspector');
 
         Color iconBg;
         Color iconColor;
@@ -970,75 +1168,122 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
 
         return Container(
           margin: const EdgeInsets.only(bottom: 14),
-          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(
+              color: isUnread ? const Color(0xFFBFDBFE) : const Color(0xFFE2E8F0),
+              width: isUnread ? 1.5 : 1.0,
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
+                color: isUnread
+                    ? const Color(0xFF2563EB).withValues(alpha: 0.06)
+                    : Colors.black.withValues(alpha: 0.03),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
             ],
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle),
-                child: Icon(icon, color: iconColor, size: 22),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () => _handleAlertTap(alert),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          alert['title'] as String,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF0F172A),
-                          ),
-                        ),
-                        if (isUnread)
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF2563EB),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                      ],
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle),
+                      child: Icon(icon, color: iconColor, size: 22),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      alert['body'] as String,
-                      style: const TextStyle(fontSize: 13, color: Color(0xFF475569), height: 1.35),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(Icons.access_time_rounded, size: 13, color: Color(0xFF94A3B8)),
-                        const SizedBox(width: 4),
-                        Text(
-                          alert['time'] as String,
-                          style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8), fontWeight: FontWeight.w500),
-                        ),
-                      ],
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  title,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                ),
+                              ),
+                              if (isUnread)
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF2563EB),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            body,
+                            style: const TextStyle(fontSize: 13, color: Color(0xFF475569), height: 1.35),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.access_time_rounded, size: 13, color: Color(0xFF94A3B8)),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    alert['time'] as String,
+                                    style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8), fontWeight: FontWeight.w500),
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEFF6FF),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: const Color(0xFFBFDBFE)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(target.sectionIcon, size: 12, color: const Color(0xFF2563EB)),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      target.actionBadgeText,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF2563EB),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 3),
+                                    const Icon(Icons.arrow_forward_ios_rounded, size: 9, color: Color(0xFF2563EB)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
         );
       },
@@ -1184,21 +1429,21 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
                       ],
                     ),
                     const SizedBox(width: 14),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Start Location', style: TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w500)),
-                          SizedBox(height: 2),
-                          Text('Katunayake Export Processing Zone', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
-                          SizedBox(height: 2),
-                          Text('Started: Today at 6:00 AM', style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
-                          SizedBox(height: 20),
-                          Text('Destination', style: TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w500)),
-                          SizedBox(height: 2),
-                          Text('Port of Colombo', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
-                          SizedBox(height: 2),
-                          Text('Expected: Today at 11:30 AM', style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+                          const Text('Start Location', style: TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w500)),
+                          const SizedBox(height: 2),
+                          Text(_activeShipment.origin, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+                          const SizedBox(height: 2),
+                          const Text('Started: Today at 8:45 AM', style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+                          const SizedBox(height: 20),
+                          const Text('Destination', style: TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w500)),
+                          const SizedBox(height: 2),
+                          Text(_activeShipment.destination, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+                          const SizedBox(height: 2),
+                          const Text('Expected: Today at 9:35 AM', style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
                         ],
                       ),
                     ),
@@ -1330,25 +1575,36 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
                     validator: (v) => v == null || v.isEmpty ? 'Required' : null,
                   ),
                   const SizedBox(height: 10),
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                  DropdownButtonFormField<String>(
+                    initialValue: _selectedCorridor,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.alt_route_rounded, color: Color(0xFF0E3352), size: 20),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
                     ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.alt_route_rounded, color: Color(0xFF0E3352), size: 20),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            _selectedCorridor,
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
-                          ),
-                        ),
-                      ],
-                    ),
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                    items: kApprovedRoutes.map((route) {
+                      return DropdownMenuItem<String>(
+                        value: route.name,
+                        child: Text(route.name),
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() {
+                          _selectedCorridor = val;
+                        });
+                      }
+                    },
                   ),
                   const SizedBox(height: 14),
                   const Text(

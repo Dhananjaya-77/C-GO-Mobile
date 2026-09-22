@@ -20,26 +20,64 @@ class SrsCurvedHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 12,
-        left: 20,
-        right: 20,
-        bottom: 24,
-      ),
       decoration: const BoxDecoration(
-        color: Color(0xFF0E3352), // Deep Customs Navy from Figures 10-14
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF091E34),
+            Color(0xFF0E3352),
+            Color(0xFF13456F),
+          ],
+        ),
         borderRadius: BorderRadius.vertical(
           bottom: Radius.circular(28),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black26,
-            blurRadius: 10,
-            offset: Offset(0, 4),
+            color: Color(0x3D0E3352),
+            blurRadius: 16,
+            offset: Offset(0, 6),
           ),
         ],
       ),
-      child: Row(
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
+        child: Stack(
+          children: [
+            // Ambient decorative background orbs
+            Positioned(
+              right: -24,
+              top: -24,
+              child: Container(
+                width: 130,
+                height: 130,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.04),
+                ),
+              ),
+            ),
+            Positioned(
+              left: 40,
+              bottom: -30,
+              child: Container(
+                width: 90,
+                height: 90,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.06),
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).padding.top + 12,
+                left: 20,
+                right: 20,
+                bottom: 22,
+              ),
+              child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           if (showBackButton) ...[
@@ -129,6 +167,10 @@ class SrsCurvedHeader extends StatelessWidget {
             ),
         ],
       ),
-    );
+    ),
+  ],
+),
+),
+);
   }
 }
