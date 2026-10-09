@@ -18,6 +18,31 @@ class AppTheme {
   static const Color slate700 = Color(0xFF334155);
   static const Color slate800 = Color(0xFF1E293B);
 
+  // Role-Specific Theme Accents & Gradients
+  static const List<Color> driverGradient = [
+    Color(0xFF091E34),
+    Color(0xFF0C2D48),
+    Color(0xFF0284C7),
+  ];
+  static const Color driverAccent = Color(0xFF0284C7);
+  static const Color driverPillBg = Color(0xFFEFF6FF);
+
+  static const List<Color> inspectorGradient = [
+    Color(0xFF061F2D),
+    Color(0xFF0A343D),
+    Color(0xFF0F766E),
+  ];
+  static const Color inspectorAccent = Color(0xFF0D9488);
+  static const Color inspectorPillBg = Color(0xFFF0FDF4);
+
+  static const List<Color> ownerGradient = [
+    Color(0xFF0B172E),
+    Color(0xFF1B2A56),
+    Color(0xFF2563EB),
+  ];
+  static const Color ownerAccent = Color(0xFF2563EB);
+  static const Color ownerPillBg = Color(0xFFEEF2FF);
+
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     scaffoldBackgroundColor: slate50,

@@ -1,9 +1,15 @@
+// Source: Google Maps Platform Code Assist
+import 'dart:async';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart' as ll;
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../services/google_maps_navigation_service.dart';
 import '../utils/app_theme.dart';
+import '../utils/cross_track_calculator.dart';
 
+/// Interactive Google Map Widget displaying approved customs corridor,
+/// live vehicle GPS location, arrival geofence radiuses, and cross-track deviation alerts.
 class CorridorMapWidget extends StatefulWidget {
   final String corridorTitle;
   final String originTitle;
@@ -39,6 +45,8 @@ class CorridorMapWidget extends StatefulWidget {
 class _CorridorMapWidgetState extends State<CorridorMapWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
+  GoogleMapController? _mapController;
+  final Completer<GoogleMapController> _controllerCompleter = Completer();
 
   @override
   void initState() {
@@ -47,6 +55,30 @@ class _CorridorMapWidgetState extends State<CorridorMapWidget>
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat();
+  }
+
+  @override
+  void didUpdateWidget(covariant CorridorMapWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.progress != widget.progress ||
+        oldWidget.isDeviated != widget.isDeviated ||
+        oldWidget.destinationTitle != widget.destinationTitle) {
+      _recenterOnVehicle();
+    }
+  }
+
+  void _recenterOnVehicle() {
+    final navService = GoogleMapsNavigationService.instance;
+    final vPos = navService.getVehiclePosition(
+      _routeIndex,
+      widget.progress,
+      isDeviated: widget.isDeviated,
+    );
+    _mapController?.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(target: vPos, zoom: 13.5),
+      ),
+    );
   }
 
   @override
@@ -62,24 +94,137 @@ class _CorridorMapWidgetState extends State<CorridorMapWidget>
     return 0;
   }
 
+  Set<Marker> _buildMarkers(
+    LatLng vehiclePos,
+    LatLng originPos,
+    LatLng destPos,
+    CrossTrackDeviationResult deviation,
+  ) {
+    final isDev = widget.isDeviated || deviation.isDeviated;
+    return {
+      Marker(
+        markerId: const MarkerId('corridor_origin'),
+        position: originPos,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+        infoWindow: InfoWindow(
+          title: widget.originTitle,
+          snippet: 'Authorized Port Origin',
+        ),
+      ),
+      Marker(
+        markerId: const MarkerId('corridor_destination'),
+        position: destPos,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        infoWindow: InfoWindow(
+          title: widget.destinationTitle,
+          snippet: 'Customs Verification Yard',
+        ),
+      ),
+      Marker(
+        markerId: const MarkerId('corridor_vehicle'),
+        position: vehiclePos,
+        icon: BitmapDescriptor.defaultMarkerWithHue(
+          isDev ? BitmapDescriptor.hueRed : BitmapDescriptor.hueAzure,
+        ),
+        infoWindow: InfoWindow(
+          title: 'Transport Vehicle',
+          snippet:
+              '${widget.speedKmH} km/h • Cross-track: ${deviation.deviationMeters.toStringAsFixed(1)}m ${isDev ? "[DEVIATED]" : "[IN CORRIDOR]"}',
+        ),
+      ),
+    };
+  }
+
+  Set<Polyline> _buildPolylines(
+    List<LatLng> routeCoords,
+    LatLng vehiclePos,
+    LatLng originPos,
+    CrossTrackDeviationResult deviation,
+  ) {
+    final polylines = <Polyline>{
+      // Geofence buffer corridor (50m buffer representation)
+      Polyline(
+        polylineId: const PolylineId('corridor_buffer'),
+        points: routeCoords,
+        width: 14,
+        color: const Color(0xFF0284C7).withValues(alpha: 0.28),
+        jointType: JointType.round,
+        startCap: Cap.roundCap,
+        endCap: Cap.roundCap,
+      ),
+      // Approved Route
+      Polyline(
+        polylineId: const PolylineId('corridor_route'),
+        points: routeCoords,
+        width: 4,
+        color: const Color(0xFF1D4ED8),
+        jointType: JointType.round,
+        startCap: Cap.roundCap,
+        endCap: Cap.roundCap,
+      ),
+    };
+
+    if (widget.isDeviated || deviation.isDeviated) {
+      final anchorPoint = deviation.nearestCorridorPoint;
+      polylines.add(
+        Polyline(
+          polylineId: const PolylineId('corridor_deviation'),
+          points: [anchorPoint, vehiclePos],
+          width: 4,
+          color: const Color(0xFFDC2626),
+          patterns: [PatternItem.dash(20), PatternItem.gap(10)],
+        ),
+      );
+    }
+
+    return polylines;
+  }
+
+  Set<Circle> _buildCircles(LatLng originPos, LatLng destPos) {
+    return {
+      Circle(
+        circleId: const CircleId('origin_geofence'),
+        center: originPos,
+        radius: 120,
+        fillColor: const Color(0xFF10B981).withValues(alpha: 0.20),
+        strokeColor: const Color(0xFF10B981),
+        strokeWidth: 2,
+      ),
+      Circle(
+        circleId: const CircleId('dest_geofence'),
+        center: destPos,
+        radius: 150,
+        fillColor: const Color(0xFF1D4ED8).withValues(alpha: 0.20),
+        strokeColor: const Color(0xFF1D4ED8),
+        strokeWidth: 2,
+      ),
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final navService = GoogleMapsNavigationService.instance;
     final rIndex = _routeIndex;
-    final routeCoords = navService
-        .getCoordinatesForRoute(rIndex)
-        .map((c) => ll.LatLng(c.latitude, c.longitude))
-        .toList();
-    final originPos = const ll.LatLng(6.9442, 79.8453);
+    final routeCoords = navService.getCoordinatesForRoute(rIndex);
+    final originPos = GoogleMapsNavigationService.colomboPortOrigin;
     final dest = navService.getDestinationCoords(rIndex);
-    final destPos = ll.LatLng(dest.latitude, dest.longitude);
     final vPos = navService.getVehiclePosition(
       rIndex,
       widget.progress,
       isDeviated: widget.isDeviated,
     );
-    final vehiclePos = ll.LatLng(vPos.latitude, vPos.longitude);
-    final isTest = WidgetsBinding.instance.runtimeType.toString().contains('TestWidgetsFlutterBinding');
+
+    // Compute exact cross-track distance using CrossTrackCalculator
+    final deviation = CrossTrackCalculator.measureDeviation(
+      position: vPos,
+      corridor: routeCoords,
+      toleranceMeters: CrossTrackCalculator.defaultToleranceMeters,
+    );
+
+    final isDeviated = widget.isDeviated || deviation.isDeviated;
+    final effectiveDeviationMeters = widget.deviationMeters > 0
+        ? widget.deviationMeters
+        : deviation.deviationMeters;
 
     return Container(
       height: widget.height,
@@ -87,8 +232,8 @@ class _CorridorMapWidgetState extends State<CorridorMapWidget>
         color: const Color(0xFFE8EEF3),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: widget.isDeviated ? AppTheme.tamperRed : AppTheme.slate200,
-          width: widget.isDeviated ? 2 : 1,
+          color: isDeviated ? AppTheme.tamperRed : AppTheme.slate200,
+          width: isDeviated ? 2 : 1,
         ),
         boxShadow: [
           BoxShadow(
@@ -101,126 +246,31 @@ class _CorridorMapWidgetState extends State<CorridorMapWidget>
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
-          // Real Google Map
+          // ── Real Official Google Map ────────────────────────────────────
           Positioned.fill(
-            child: FlutterMap(
-              options: MapOptions(
-                initialCenter: vehiclePos,
-                initialZoom: 13.5,
-                interactionOptions: const InteractionOptions(
-                  flags: InteractiveFlag.all,
-                ),
+            child: GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: vPos,
+                zoom: 13.5,
               ),
-              children: [
-                if (!isTest)
-                  TileLayer(
-                    urlTemplate: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-                    userAgentPackageName: 'com.example.securetrack_mobile',
-                    maxZoom: 19,
-                    subdomains: const ['mt0', 'mt1', 'mt2', 'mt3'],
-                  )
-                else
-                  Container(color: const Color(0xFFE2E8F0)),
-
-                // Geofence buffer corridor
-                PolylineLayer(
-                  polylines: [
-                    Polyline(
-                      points: routeCoords,
-                      strokeWidth: 14.0,
-                      color: const Color(0xFF0284C7).withValues(alpha: 0.25),
-                      strokeCap: StrokeCap.round,
-                    ),
-                    Polyline(
-                      points: routeCoords,
-                      strokeWidth: 4.5,
-                      color: const Color(0xFF1D4ED8),
-                      strokeCap: StrokeCap.round,
-                    ),
-                    if (widget.isDeviated)
-                      Polyline(
-                        points: [
-                          routeCoords.length > 2 ? routeCoords[2] : originPos,
-                          vehiclePos,
-                        ],
-                        strokeWidth: 4.0,
-                        color: const Color(0xFFDC2626),
-                        pattern: StrokePattern.dashed(segments: const [6, 4]),
-                      ),
-                  ],
-                ),
-
-                // Markers
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: originPos,
-                      width: 34,
-                      height: 34,
-                      child: Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 4,
-                            ),
-                          ],
-                        ),
-                        child: const Icon(Icons.anchor_rounded, color: Colors.white, size: 14),
-                      ),
-                    ),
-                    Marker(
-                      point: destPos,
-                      width: 34,
-                      height: 34,
-                      child: Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFDC2626),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 4,
-                            ),
-                          ],
-                        ),
-                        child: const Icon(Icons.warehouse_rounded, color: Colors.white, size: 14),
-                      ),
-                    ),
-                    Marker(
-                      point: vehiclePos,
-                      width: 44,
-                      height: 44,
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: widget.isDeviated ? const Color(0xFFDC2626) : const Color(0xFF0E3352),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: (widget.isDeviated ? const Color(0xFFDC2626) : const Color(0xFF0E3352))
-                                  .withValues(alpha: 0.35),
-                              blurRadius: 8,
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          widget.isDeviated ? Icons.warning_rounded : Icons.local_shipping_rounded,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              mapType: MapType.normal,
+              markers: _buildMarkers(vPos, originPos, dest, deviation),
+              polylines: _buildPolylines(routeCoords, vPos, originPos, deviation),
+              circles: _buildCircles(originPos, dest),
+              myLocationEnabled: false,
+              myLocationButtonEnabled: false,
+              zoomControlsEnabled: false,
+              compassEnabled: false,
+              mapToolbarEnabled: false,
+              gestureRecognizers: {
+                Factory<EagerGestureRecognizer>(() => EagerGestureRecognizer()),
+              },
+              onMapCreated: (controller) {
+                _mapController = controller;
+                if (!_controllerCompleter.isCompleted) {
+                  _controllerCompleter.complete(controller);
+                }
+              },
             ),
           ),
 
@@ -261,7 +311,7 @@ class _CorridorMapWidgetState extends State<CorridorMapWidget>
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: widget.isDeviated
+                  color: isDeviated
                       ? AppTheme.tamperRed
                       : AppTheme.navyPrimary.withValues(alpha: 0.92),
                   borderRadius: BorderRadius.circular(10),
@@ -276,7 +326,7 @@ class _CorridorMapWidgetState extends State<CorridorMapWidget>
                 child: Row(
                   children: [
                     Icon(
-                      widget.isDeviated
+                      isDeviated
                           ? Icons.error_outline_rounded
                           : Icons.check_circle_outline_rounded,
                       color: Colors.white,
@@ -289,8 +339,8 @@ class _CorridorMapWidgetState extends State<CorridorMapWidget>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            widget.isDeviated
-                                ? '🚨 CORRIDOR DEVIATION ALERT (+${widget.deviationMeters.toStringAsFixed(0)}m)'
+                            isDeviated
+                                ? '🚨 CORRIDOR DEVIATION ALERT (+${effectiveDeviationMeters.toStringAsFixed(0)}m)'
                                 : '🟢 WITHIN CUSTOMS APPROVED CORRIDOR',
                             style: const TextStyle(
                               color: Colors.white,
@@ -300,7 +350,7 @@ class _CorridorMapWidgetState extends State<CorridorMapWidget>
                             ),
                           ),
                           Text(
-                            widget.corridorTitle,
+                            '${widget.corridorTitle} • Cross-Track: ${effectiveDeviationMeters.toStringAsFixed(1)}m (Tolerance: 50m)',
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 10,

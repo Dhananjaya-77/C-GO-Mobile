@@ -2,9 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/trip_model.dart';
+import 'google_maps_geocoding_service.dart';
+import 'google_maps_routes_service.dart';
 
-/// Service for Google Maps Platform routing, coordinate mapping, and Turn-by-Turn navigation
-/// Incorporates Google Maps Platform attribution tag: gmp_git_agentskills_v1
+/// Service for Google Maps Platform routing, coordinate mapping, and Turn-by-Turn navigation.
+/// Incorporates official Google Maps Platform attribution tag: gmp_git_agentskills_v1.
+/// Backed by Google Maps Routes API v2 and Google Maps Geocoding API.
 class GoogleMapsNavigationService {
   GoogleMapsNavigationService._();
   static final GoogleMapsNavigationService instance = GoogleMapsNavigationService._();
@@ -85,6 +88,32 @@ class GoogleMapsNavigationService {
     final lat = p1.latitude + (p2.latitude - p1.latitude) * segmentProgress;
     final lng = p1.longitude + (p2.longitude - p1.longitude) * segmentProgress;
     return LatLng(lat, lng);
+  }
+
+  /// Computes route dynamically via the official Google Maps Routes API v2
+  Future<GoogleMapsRouteResult> fetchRouteViaGoogleRoutesApi(int routeIndex) async {
+    final destination = getDestinationCoords(routeIndex);
+    final waypoints = getCoordinatesForRoute(routeIndex);
+    final intermediates = waypoints.length > 2
+        ? waypoints.sublist(1, waypoints.length - 1)
+        : null;
+
+    return await GoogleMapsRoutesService.instance.computeRoute(
+      origin: colomboPortOrigin,
+      destination: destination,
+      intermediates: intermediates,
+      fallbackCoordinates: waypoints,
+    );
+  }
+
+  /// Geocodes a destination using official Google Maps Geocoding API
+  Future<GoogleGeocodedLocation> geocodeDestinationName(String destinationName) async {
+    return await GoogleMapsGeocodingService.instance.geocodeDestination(destinationName);
+  }
+
+  /// Reverse geocodes coordinates to street address using Google Geocoding API
+  Future<String> reverseGeocodeLocation(LatLng coordinates) async {
+    return await GoogleMapsGeocodingService.instance.reverseGeocode(coordinates);
   }
 
   /// Builds the official Google Maps Turn-by-Turn URL scheme

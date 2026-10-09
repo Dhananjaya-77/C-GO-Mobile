@@ -6,6 +6,7 @@ import '../../../models/trip_model.dart';
 import '../../../models/vehicle_model.dart';
 import '../../../utils/app_theme.dart';
 import '../../../widgets/corridor_map_widget.dart';
+import '../../../widgets/dashboard_animations.dart';
 import '../../../widgets/sensor_telemetry_card.dart';
 
 class DriverHomeTab extends StatefulWidget {
@@ -109,28 +110,38 @@ class _DriverHomeTabState extends State<DriverHomeTab> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // ─── Figure 10: Current Trip Card ──────────────────────────────
-          _buildCurrentTripCard(context, trip),
+          AnimatedFadeSlide(
+            child: _buildCurrentTripCard(context, trip),
+          ),
 
           const SizedBox(height: 16),
 
           // ─── Figure 10: Quick Stats Card ──────────────────────────────
-          _buildQuickStatsCard(context),
+          AnimatedFadeSlide(
+            child: _buildQuickStatsCard(context),
+          ),
 
           const SizedBox(height: 16),
 
           // ─── Figure 10: Emergency Alert Button ────────────────────────
-          _buildEmergencyAlertButton(context),
+          AnimatedFadeSlide(
+            child: _buildEmergencyAlertButton(context),
+          ),
 
           const SizedBox(height: 16),
 
           // ─── Truck & Assigned IoT Lock Card (Preserved from requirements) ──
-          _buildTruckAndIotLockCard(context),
+          AnimatedFadeSlide(
+            child: _buildTruckAndIotLockCard(context),
+          ),
 
           const SizedBox(height: 16),
 
           // ─── Sensor Telemetry Card (Auto-Monitored via IoT Sensors) ─
-          SensorTelemetryCard(
-            container: _container,
+          AnimatedFadeSlide(
+            child: SensorTelemetryCard(
+              container: _container,
+            ),
           ),
         ],
       ),
@@ -176,25 +187,22 @@ class _DriverHomeTabState extends State<DriverHomeTab> {
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFFDCFCE7),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: const Color(0xFF86EFAC)),
                 ),
-                child: Row(
+                child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      width: 7,
-                      height: 7,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF16A34A),
-                        shape: BoxShape.circle,
-                      ),
+                    PulsingBeaconDot(
+                      color: Color(0xFF16A34A),
+                      size: 7,
+                      pulseRadius: 13,
                     ),
-                    const SizedBox(width: 6),
-                    const Text(
+                    SizedBox(width: 4),
+                    Text(
                       'On Route',
                       style: TextStyle(
                         color: Color(0xFF15803D),
@@ -476,35 +484,44 @@ class _DriverHomeTabState extends State<DriverHomeTab> {
     required Color bg,
   }) {
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color.withValues(alpha: 0.15)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(height: 6),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 19,
-                fontWeight: FontWeight.w800,
-                color: color,
+      child: AnimatedScaleButton(
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: color.withValues(alpha: 0.18), width: 1.2),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.06),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
               ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 11,
-                color: Color(0xFF64748B),
-                fontWeight: FontWeight.w600,
+            ],
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(height: 6),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFF64748B),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -512,9 +529,8 @@ class _DriverHomeTabState extends State<DriverHomeTab> {
 
   // ── Figure 10: Emergency Alert Button ─────────────────────────────────
   Widget _buildEmergencyAlertButton(BuildContext context) {
-    return InkWell(
-      onTap: widget.onSosPressed,
-      borderRadius: BorderRadius.circular(16),
+    return AnimatedScaleButton(
+      onPressed: widget.onSosPressed,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
@@ -528,9 +544,9 @@ class _DriverHomeTabState extends State<DriverHomeTab> {
           border: Border.all(color: const Color(0xFFFCA5A5), width: 1.2),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFEF4444).withValues(alpha: 0.10),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
+              color: const Color(0xFFEF4444).withValues(alpha: 0.14),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),

@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dilshan Wickrampala - Software Engineer CV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0f172a;        /* Deep slate navy */
+      --accent: #2563eb;         /* Modern blue */
+      --accent-soft: #eff6ff;    /* Light blue tint */
+      --text-main: #1e293b;      /* Slate 800 */
+      --text-muted: #475569;     /* Slate 600 */
+      --text-subtle: #64748b;    /* Slate 500 */
+      --border-color: #e2e8f0;   /* Slate 200 */
+      --card-bg: #f8fafc;
+      --tag-bg: #f1f5f9;
+      --tag-border: #cbd5e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #e2e8f0;
+      color: var(--text-main);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      padding: 30px 15px;
+    }
+
+    .no-print-bar {
+      max-width: 850px;
+      margin: 0 auto 20px auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      padding: 12px 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    .print-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .print-btn:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(37,99,235,0.25);
+    }
+
+    .resume-container {
+      max-width: 850px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 44px 48px;
+      border-radius: 4px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    /* HEADER */
+    header {
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 20px;
+      margin-bottom: 22px;
+    }
+
+    .name {
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--primary);
+      text-transform: uppercase;
+    }
+
+    .role-badge {
+      display: inline-block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-top: 2px;
+      margin-bottom: 12px;
+    }
+
+    .contacts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 20px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .contact-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      color: var(--text-muted);
+      transition: color 0.15s ease;
+    }
+
+    .contact-item svg {
+      width: 14px;
+      height: 14px;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .contact-item a {
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    .contact-item a:hover {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+
+    /* SECTIONS */
+    .section {
+      margin-bottom: 22px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--primary);
+      margin-bottom: 12px;
+    }
+
+    .section-title::after {
+      content: "";
+      flex: 1;
+      height: 1.5px;
+      background: var(--border-color);
+    }
+
+    .summary-text {
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: var(--text-muted);
+      text-align: justify;
+    }
+
+    /* SKILLS GRID */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px 24px;
+    }
+
+    .skill-category {
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .skill-label {
+      font-weight: 700;
+      color: var(--text-main);
+      display: inline-block;
+      min-width: 110px;
+    }
+
+    .skill-values {
+      color: var(--text-muted);
+    }
+
+    /* PROJECTS & EXPERIENCE ITEMS */
+    .item-card {
+      margin-bottom: 16px;
+    }
+
+    .item-card:last-child {
+      margin-bottom: 0;
+    }
+
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 4px;
+    }
+
+    .item-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .item-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .tech-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .item-meta {
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text-subtle);
+      white-space: nowrap;
+    }
+
+    .bullet-list {
+      list-style-type: none;
+      padding-left: 0;
+      margin-top: 5px;
+    }
+
+    .bullet-list li {
+      position: relative;
+      padding-left: 16px;
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .bullet-list li::before {
+      content: "•";
+      position: absolute;
+      left: 3px;
+      top: -1px;
+      color: var(--accent);
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    /* REFERENCES */
+    .refs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .ref-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 12px 16px;
+    }
+
+    .ref-name {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .ref-role {
+      font-size: 12px;
+      color: var(--text-subtle);
+      margin-bottom: 6px;
+    }
+
+    .ref-contact {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    /* PRINT RULES */
+    @media print {
+      body {
+        background: transparent !important;
+        padding: 0 !important;
+      }
+
+      .no-print-bar {
+        display: none !important;
+      }
+
+      .resume-container {
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        max-width: 100% !important;
+        padding: 20px 24px !important;
+      }
+
+      @page {
+        size: A4;
+        margin: 12mm 10mm;
+      }
+
+      a {
+        text-decoration: none !important;
+        color: inherit !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="no-print-bar">
+    <div>
+      <strong>✨ Modern ATS-Ready CV Preview</strong>
+      <span style="font-size: 13px; color: #64748b; margin-left: 10px;">Optimized for visual appeal and ATS scanners</span>
+    </div>
+    <button class="print-btn" onclick="window.print()">
+      <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+        <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zm1 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2H6V3zm6 8H4v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3zm2-4a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v2z"/>
+      </svg>
+      Print / Save as PDF
+    </button>
+  </div>
+
+  <main class="resume-container">
+    <!-- HEADER -->
+    <header>
+      <h1 class="name">Dilshan Wickrampala</h1>
+      <div class="role-badge">IT Undergraduate &bull; Full-Stack & Mobile Software Engineer</div>
+      
+      <div class="contacts">
+        <div class="contact-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          <span>Sri Lanka</span>
+        </div>
+        <div class="contact-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <a href="tel:+94758349141">+94 75 834 9141</a>
+        </div>
+        <div class="contact-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <a href="mailto:ashmikadilshan6@gmail.com">ashmikadilshan6@gmail.com</a>
+        </div>
+        <div class="contact-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+          <a href="https://linkedin.com/in/ashmikadilshan/" target="_blank">linkedin.com/in/ashmikadilshan</a>
+        </div>
+        <div class="contact-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          <a href="https://github.com/ashmikadilshan" target="_blank">github.com/ashmikadilshan</a>
+        </div>
+        <div class="contact-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <a href="https://dilsnspolio.vercel.app/" target="_blank">dilsnspolio.vercel.app</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- PROFESSIONAL SUMMARY -->
+    <section class="section">
+      <h2 class="section-title">Professional Summary</h2>
+      <p class="summary-text">
+        Proactive IT Undergraduate at the Institute of Technology, University of Moratuwa, with demonstrable expertise in engineering full-stack web and cross-platform mobile solutions. Proficient in modern JavaScript/TypeScript ecosystems (React, Node.js, Nest.js), Flutter, relational & NoSQL databases, and cloud/container tooling. Experienced in designing scalable SaaS platforms, business management software, and AI-augmented features. Passionate about writing clean, maintainable architecture and exploring best practices across cybersecurity, API engineering, and cloud deployment.
+      </p>
+    </section>
+
+    <!-- EDUCATION -->
+    <section class="section">
+      <h2 class="section-title">Education</h2>
+      <div class="item-card">
+        <div class="item-header">
+          <div class="item-title">Institute of Technology, University of Moratuwa (ITUM)</div>
+          <span class="item-meta">2023 – Present</span>
+        </div>
+        <div style="font-size: 13.5px; color: var(--text-muted); font-weight: 500;">
+          Diploma in Information Technology (NDT)
+        </div>
+      </div>
+    </section>
+
+    <!-- TECHNICAL SKILLS -->
+    <section class="section">
+      <h2 class="section-title">Technical Skills</h2>
+      <div class="skills-grid">
+        <div class="skill-category">
+          <span class="skill-label">Languages:</span>
+          <span class="skill-values">JavaScript (ES6+), TypeScript, Dart, Python, Java</span>
+        </div>
+        <div class="skill-category">
+          <span class="skill-label">Frontend:</span>
+          <span class="skill-values">React.js, Next.js, Vite, HTML5, CSS3, Responsive Design</span>
+        </div>
+        <div class="skill-category">
+          <span class="skill-label">Backend:</span>
+          <span class="skill-values">Node.js, Express.js, Nest.js, RESTful APIs, Prisma ORM</span>
+        </div>
+        <div class="skill-category">
+          <span class="skill-label">Databases:</span>
+          <span class="skill-values">PostgreSQL, MongoDB, SQL</span>
+        </div>
+        <div class="skill-category">
+          <span class="skill-label">Mobile Dev:</span>
+          <span class="skill-values">Flutter, Dart, Cross-Platform UI & State Management</span>
+        </div>
+        <div class="skill-category">
+          <span class="skill-label">DevOps & Tools:</span>
+          <span class="skill-values">Docker, Git, GitHub, Postman, VS Code, Jira, CI/CD basics</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SELECTED PROJECTS -->
+    <section class="section">
+      <h2 class="section-title">Featured Projects</h2>
+
+      <!-- Project 1 -->
+      <div class="item-card">
+        <div class="item-header">
+          <div class="item-title-wrap">
+            <span class="item-title">Freight Forward Management System</span>
+            <span class="tech-pill">React.js</span>
+            <span class="tech-pill">Nest.js</span>
+            <span class="tech-pill">TypeScript</span>
+            <span class="tech-pill">Prisma</span>
+            <span class="tech-pill">PostgreSQL</span>
+          </div>
+        </div>
+        <ul class="bullet-list">
+          <li>Architected an enterprise freight forwarding platform to streamline cargo tracking, documentation, and operational dispatch.</li>
+          <li>Structured robust relational schemas and type-safe database queries using PostgreSQL and Prisma ORM.</li>
+          <li>Engineered modular, clean-architecture RESTful micro-services with Nest.js and TypeScript, enforcing strict validation and error handling.</li>
+        </ul>
+      </div>
+
+      <!-- Project 2 -->
+      <div class="item-card">
+        <div class="item-header">
+          <div class="item-title-wrap">
+            <span class="item-title">Enterprise Inventory Management System</span>
+            <span class="tech-pill">React.js</span>
+            <span class="tech-pill">Node.js</span>
+            <span class="tech-pill">Express.js</span>
+            <span class="tech-pill">MongoDB</span>
+          </div>
+        </div>
+        <ul class="bullet-list">
+          <li>Delivered an end-to-end stock and inventory tracking web application featuring real-time analytics and transaction history.</li>
+          <li>Implemented granular Role-Based Access Control (RBAC), barcode scanner integration, and automated low-stock alerting.</li>
+          <li>Created high-throughput REST APIs and indexed MongoDB collections for fast querying and reporting across thousands of items.</li>
+        </ul>
+      </div>
+
+      <!-- Project 3 -->
+      <div class="item-card">
+        <div class="item-header">
+          <div class="item-title-wrap">
+            <span class="item-title">ShopWave &ndash; AI-Augmented E-Commerce Platform</span>
+            <span class="tech-pill">React.js</span>
+            <span class="tech-pill">Vite</span>
+            <span class="tech-pill">Tailwind CSS</span>
+            <span class="tech-pill">AI Integration</span>
+          </div>
+        </div>
+        <ul class="bullet-list">
+          <li>Engineered an ultra-fast, responsive web application utilizing Vite and modern component-driven React architecture.</li>
+          <li>Integrated intelligent AI capabilities for personalized recommendations, enhancing user engagement and checkout flow.</li>
+        </ul>
+      </div>
+
+      <!-- Project 4 -->
+      <div class="item-card">
+        <div class="item-header">
+          <div class="item-title-wrap">
+            <span class="item-title">Chatbot SaaS Application</span>
+            <span class="tech-pill">React.js</span>
+            <span class="tech-pill">Node.js</span>
+            <span class="tech-pill">REST APIs</span>
+            <span class="tech-pill">LLM / AI</span>
+          </div>
+        </div>
+        <ul class="bullet-list">
+          <li>Constructed a multi-tenant SaaS application allowing users to deploy, train, and manage conversational AI chatbots.</li>
+          <li>Implemented secure token-based authentication and intuitive dashboard controls for managing bot prompts and analytics.</li>
+        </ul>
+      </div>
+
+      <!-- Project 5 -->
+      <div class="item-card">
+        <div class="item-header">
+          <div class="item-title-wrap">
+            <span class="item-title">Automated Birthday Card Generator App</span>
+            <span class="tech-pill">Flutter</span>
+            <span class="tech-pill">Dart</span>
+            <span class="tech-pill">Mobile UI/UX</span>
+          </div>
+        </div>
+        <ul class="bullet-list">
+          <li>Developed a cross-platform mobile app that dynamically creates personalized greeting cards from user inputs and photos.</li>
+          <li>Built smooth custom UI animations, flexible template-rendering engines, and native social-share capabilities.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- EXPERIENCE -->
+    <section class="section">
+      <h2 class="section-title">Experience</h2>
+      <div class="item-card">
+        <div class="item-header">
+          <div>
+            <span class="item-title">Independent Software Developer</span>
+            <span style="font-size: 13px; color: var(--text-muted); font-weight: 500;"> &bull; Freelance / Contract</span>
+          </div>
+          <span class="item-meta">2024 &ndash; Present</span>
+        </div>
+        <ul class="bullet-list">
+          <li>Architected and delivered custom full-stack web and mobile applications for clients, adhering to modern engineering standards.</li>
+          <li>Containerized client runtimes and development environments using Docker to ensure reproducible builds and seamless onboarding.</li>
+          <li>Maintained rigorous version control workflows with Git & GitHub, adhering to CI/CD practices and comprehensive code reviews.</li>
+          <li>Leveraged AI-assisted tooling (LLMs, GitHub Copilot) to accelerate refactoring, automated testing, and problem resolution.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- REFERENCES -->
+    <section class="section" style="margin-bottom: 0;">
+      <h2 class="section-title">References</h2>
+      <div class="refs-grid">
+        <div class="ref-card">
+          <div class="ref-name">Ms. Tharukshi Adasuriya</div>
+          <div class="ref-role">Lecturer, Division of Information Technology<br>Institute of Technology, University of Moratuwa</div>
+          <div class="ref-contact">
+            <div>✉️ <a href="mailto:tharukshin@itum.mrt.ac.lk" style="color: inherit; text-decoration: none;">tharukshin@itum.mrt.ac.lk</a></div>
+            <div>📞 +94 77 190 2981</div>
+          </div>
+        </div>
+        <div class="ref-card">
+          <div class="ref-name">Ms. Sarah Fernando</div>
+          <div class="ref-role">Lecturer, Division of Information Technology<br>Institute of Technology, University of Moratuwa</div>
+          <div class="ref-contact">
+            <div>✉️ Available upon request</div>
+            <div>📞 Available upon request</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+</body>
+</html>

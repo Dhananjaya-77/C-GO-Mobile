@@ -39,8 +39,9 @@ void main() {
       expect(find.textContaining('Kamal Wickramasinghe'), findsNothing);
       expect(find.textContaining('Dhammika Bandara'), findsNothing);
 
-      // Verify department / role title is present
-      expect(find.textContaining('Customs Enforcement Division'), findsOneWidget);
+      // Verify role title is present and department details are removed from header
+      expect(find.textContaining('Customs Inspector'), findsOneWidget);
+      expect(find.textContaining('Customs Enforcement Division'), findsNothing);
     });
 
     testWidgets('Container Owner Dashboard does not display personal username/email in app bar', (tester) async {

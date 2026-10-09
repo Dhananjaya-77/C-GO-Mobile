@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hasitha Dhananjaya - Professional IT CV</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 12mm 14mm;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 9.5pt;
+      line-height: 1.35;
+      color: #1e293b;
+      background: #f8fafc;
+      padding: 20px;
+    }
+    .page-container {
+      max-width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 16mm 18mm;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+    }
+    @media print {
+      body {
+        background: none;
+        padding: 0;
+      }
+      .page-container {
+        box-shadow: none;
+        padding: 0;
+        max-width: 100%;
+        min-height: auto;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+    header {
+      border-bottom: 2px solid #0284c7;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 20pt;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #0f172a;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+    .title-sub {
+      font-size: 11pt;
+      font-weight: 600;
+      color: #0284c7;
+      margin-bottom: 6px;
+    }
+    .contact-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      font-size: 8.5pt;
+      color: #475569;
+    }
+    .contact-bar a {
+      color: #0369a1;
+      text-decoration: none;
+    }
+    section {
+      margin-bottom: 11px;
+    }
+    .section-title {
+      font-size: 10pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #0f172a;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 2px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .section-title::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: #e2e8f0;
+    }
+    p.summary {
+      font-size: 9pt;
+      color: #334155;
+      text-align: justify;
+    }
+    .skills-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.8pt;
+    }
+    .skills-table td {
+      padding: 1.5px 0;
+      vertical-align: top;
+    }
+    .skills-category {
+      font-weight: 600;
+      color: #0f172a;
+      width: 130px;
+    }
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 2px;
+    }
+    .item-title {
+      font-weight: 700;
+      font-size: 9.3pt;
+      color: #0f172a;
+    }
+    .item-subtitle {
+      font-weight: 500;
+      color: #0369a1;
+      font-size: 8.8pt;
+    }
+    .item-date {
+      font-size: 8.5pt;
+      color: #64748b;
+      font-weight: 500;
+    }
+    ul.bullet-list {
+      list-style-type: disc;
+      padding-left: 16px;
+      margin-top: 2px;
+      margin-bottom: 6px;
+    }
+    ul.bullet-list li {
+      font-size: 8.8pt;
+      color: #334155;
+      margin-bottom: 2px;
+      line-height: 1.3;
+    }
+    ul.bullet-list strong {
+      color: #0f172a;
+    }
+    .print-banner {
+      max-width: 210mm;
+      margin: 0 auto 12px auto;
+      background: #e0f2fe;
+      border: 1px solid #bae6fd;
+      padding: 10px 16px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 9pt;
+      color: #0369a1;
+    }
+    .btn-print {
+      background: #0284c7;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 9pt;
+    }
+    .btn-print:hover {
+      background: #0369a1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="print-banner no-print">
+    <span>💡 <strong>Tip:</strong> Click the button to export directly as a single-page PDF (or press <code>Cmd + P</code> / <code>Ctrl + P</code>).</span>
+    <button class="btn-print" onclick="window.print()">Save as PDF / Print</button>
+  </div>
+
+  <div class="page-container">
+    <!-- Header -->
+    <header>
+      <h1>Hasitha Dhananjaya</h1>
+      <div class="title-sub">Information Technology Undergraduate &bull; Software &amp; Mobile Engineer</div>
+      <div class="contact-bar">
+        <span>📍 Colombo, Sri Lanka</span>
+        <span>✉️ <a href="mailto:hasidhananjaya121212@gmail.com">hasidhananjaya121212@gmail.com</a></span>
+        <span>📞 +94 7X XXX XXXX</span>
+        <span>🌐 <a href="https://linkedin.com">linkedin.com/in/hasitha-dhananjaya</a></span>
+        <span>💻 <a href="https://github.com/Dhananjaya-77">github.com/Dhananjaya-77</a></span>
+      </div>
+    </header>
+
+    <!-- Professional Summary -->
+    <section>
+      <div class="section-title">Professional Summary</div>
+      <p class="summary">
+        Analytical and highly motivated <strong>Information Technology undergraduate</strong> with solid foundations in object-oriented programming, data structures, and database systems. Experienced in developing robust, scalable mobile and web solutions utilizing <strong>Flutter, Dart, Firebase, and REST APIs</strong>. Strong understanding of Agile development, code modularity, and software security practices. Eager to leverage technical aptitude and problem-solving skills in an entry-level IT / Software Engineering capacity to build impactful solutions.
+      </p>
+    </section>
+
+    <!-- Technical Skills -->
+    <section>
+      <div class="section-title">Technical Skills</div>
+      <table class="skills-table">
+        <tr>
+          <td class="skills-category">Programming:</td>
+          <td>Dart, Java, Python, JavaScript, SQL, C/C++</td>
+        </tr>
+        <tr>
+          <td class="skills-category">Mobile &amp; Web:</td>
+          <td>Flutter (BLoC/Provider), React.js (basics), Node.js/Express, HTML5/CSS3</td>
+        </tr>
+        <tr>
+          <td class="skills-category">Cloud &amp; Databases:</td>
+          <td>Firebase (Auth, Firestore, Cloud Functions), MySQL, PostgreSQL, SQLite</td>
+        </tr>
+        <tr>
+          <td class="skills-category">APIs &amp; Security:</td>
+          <td>RESTful APIs, Google Maps Platform, Biometric Authentication (LocalAuth), JWT</td>
+        </tr>
+        <tr>
+          <td class="skills-category">Tools &amp; DevOps:</td>
+          <td>Git, GitHub, Android Studio, VS Code, Postman, Linux CLI, Jira / Agile</td>
+        </tr>
+      </table>
+    </section>
+
+    <!-- Technical Projects -->
+    <section>
+      <div class="section-title">Key Technical Projects</div>
+
+      <div>
+        <div class="item-header">
+          <span class="item-title">SecureTrack – Real-time Mobile Security &amp; Asset Tracker</span>
+          <span class="item-date">2024</span>
+        </div>
+        <div class="item-subtitle">Flutter &bull; Firebase &bull; Google Maps Platform &bull; REST API</div>
+        <ul class="bullet-list">
+          <li>Architected a cross-platform mobile application delivering real-time geo-tracking and geofence monitoring.</li>
+          <li>Integrated <strong>Google Maps SDK</strong> and device <strong>Geolocator</strong> for low-latency coordinate tracking and route visualization.</li>
+          <li>Strengthened access control with device hardware biometrics (<strong>LocalAuth</strong>) and tokenized session authentication.</li>
+          <li>Engineered resilient HTTP network layers with automated timeout handling, error interceptors, and local SQLite caching.</li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="item-header">
+          <span class="item-title">Enterprise Inventory &amp; Order Processing System</span>
+          <span class="item-date">2023 &ndash; 2024</span>
+        </div>
+        <div class="item-subtitle">Java &bull; MySQL &bull; JDBC &bull; Object-Oriented Architecture</div>
+        <ul class="bullet-list">
+          <li>Designed normalized relational schema handling complex queries, transactions, and audit logs across 1,000+ SKU records.</li>
+          <li>Implemented Role-Based Access Control (RBAC) to enforce security boundaries between administrative staff and warehouse users.</li>
+          <li>Built automated low-stock alerting and automated invoice generation modules, reducing manual stock inspection by 40%.</li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="item-header">
+          <span class="item-title">Campus IT Incident &amp; Service Desk Portal</span>
+          <span class="item-date">2023</span>
+        </div>
+        <div class="item-subtitle">Web Stack &bull; RESTful Services &bull; Relational Database</div>
+        <ul class="bullet-list">
+          <li>Created an end-to-end helpdesk web platform enabling departments to submit, assign, and escalate IT support issues.</li>
+          <li>Implemented real-time ticket categorization and email notifications, cutting average resolution turnaround time by 30%.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Education -->
+    <section>
+      <div class="section-title">Education</div>
+      <div>
+        <div class="item-header">
+          <span class="item-title">BSc (Hons) in Information Technology / Software Engineering</span>
+          <span class="item-date">Expected 2026</span>
+        </div>
+        <div class="item-subtitle">[University / Institute Name], Sri Lanka &bull; Current GPA: [3.X / 4.0]</div>
+        <ul class="bullet-list">
+          <li><strong>Core Modules:</strong> Data Structures &amp; Algorithms, Object-Oriented Programming, Database Management Systems (DBMS), Operating Systems, Computer Networks, Software Engineering Principles, Mobile Application Development.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Leadership & Extracurricular -->
+    <section>
+      <div class="section-title">Leadership &amp; Certifications</div>
+      <ul class="bullet-list">
+        <li><strong>Tech Community Member &amp; Peer Mentor:</strong> Conducted peer coding sessions on version control (Git/GitHub) and clean Flutter code architecture.</li>
+        <li><strong>Hackathons:</strong> Competed in inter-university software development competitions, pitching functional MVPs within tight deadlines.</li>
+        <li><strong>Certifications:</strong> Mobile Application Development with Flutter &bull; Foundations of Cloud Computing &bull; SQL &amp; Relational Databases.</li>
+      </ul>
+    </section>
+
+  </div>
+
+</body>
+</html>

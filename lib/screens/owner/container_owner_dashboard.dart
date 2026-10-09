@@ -4,6 +4,7 @@ import '../../services/auth_service.dart';
 import '../../utils/alert_navigation_helper.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/corridor_map_widget.dart';
+import '../../widgets/dashboard_animations.dart';
 import '../../widgets/sensor_telemetry_card.dart';
 import '../../widgets/srs_curved_header.dart';
 import '../welcome_screen.dart';
@@ -155,7 +156,7 @@ class _ContainerOwnerDashboardScreenState
 
           // ── Active Tab View ───────────────────────────────────────────
           Expanded(
-            child: IndexedStack(
+            child: FadeIndexedStack(
               index: _currentTabIndex,
               children: [
                 // Tab 0: Figure 10 (Home Screen)
@@ -264,6 +265,32 @@ class _ContainerOwnerDashboardScreenState
     return SrsCurvedHeader(
       title: title,
       subtitle: subtitle,
+      gradientColors: AppTheme.ownerGradient,
+      statusBadge: Container(
+        margin: const EdgeInsets.only(top: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFF60A5FA).withValues(alpha: 0.35)),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            PulsingBeaconDot(color: Color(0xFF60A5FA), size: 5, pulseRadius: 11),
+            SizedBox(width: 5),
+            Text(
+              'FLEET IOT TELEMETRY ACTIVE',
+              style: TextStyle(
+                color: Color(0xFFDBEAFE),
+                fontSize: 9.5,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
+        ),
+      ),
       onProfileTap: () {
         setState(() => _currentTabIndex = 4);
       },
@@ -276,8 +303,8 @@ class _ContainerOwnerDashboardScreenState
             onPressed: () => _showLogoutConfirmation(context),
           ),
           const SizedBox(width: 4),
-          GestureDetector(
-            onTap: () => setState(() => _currentTabIndex = 4),
+          AnimatedScaleButton(
+            onPressed: () => setState(() => _currentTabIndex = 4),
             child: Container(
               width: 40,
               height: 40,
@@ -285,7 +312,7 @@ class _ContainerOwnerDashboardScreenState
                 color: Colors.white.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.3),
+                  color: Colors.white.withValues(alpha: 0.35),
                   width: 1.5,
                 ),
               ),
@@ -309,35 +336,44 @@ class _ContainerOwnerDashboardScreenState
     required Color bg,
   }) {
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color.withValues(alpha: 0.15)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(height: 6),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 19,
-                fontWeight: FontWeight.w800,
-                color: color,
+      child: AnimatedScaleButton(
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: color.withValues(alpha: 0.18), width: 1.2),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.06),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
               ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 11,
-                color: Color(0xFF64748B),
-                fontWeight: FontWeight.w600,
+            ],
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(height: 6),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFF64748B),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1782,11 +1818,16 @@ class _ContainerOwnerDashboardScreenState
       onTap: () => setState(() => _currentTabIndex = index),
       borderRadius: BorderRadius.circular(16),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFEFF6FF) : Colors.transparent,
+          color: isSelected ? AppTheme.ownerPillBg : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFC7D2FE) : Colors.transparent,
+            width: 1,
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1794,10 +1835,15 @@ class _ContainerOwnerDashboardScreenState
             Stack(
               clipBehavior: Clip.none,
               children: [
-                Icon(
-                  isSelected ? selectedIcon : icon,
-                  color: isSelected ? const Color(0xFF1D4ED8) : const Color(0xFF64748B),
-                  size: 24,
+                AnimatedScale(
+                  scale: isSelected ? 1.12 : 1.0,
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutBack,
+                  child: Icon(
+                    isSelected ? selectedIcon : icon,
+                    color: isSelected ? AppTheme.ownerAccent : const Color(0xFF64748B),
+                    size: 24,
+                  ),
                 ),
                 if (badgeCount != null && badgeCount > 0 && !isSelected)
                   Positioned(
@@ -1823,7 +1869,7 @@ class _ContainerOwnerDashboardScreenState
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected ? const Color(0xFF1D4ED8) : const Color(0xFF64748B),
+                color: isSelected ? AppTheme.ownerAccent : const Color(0xFF64748B),
               ),
             ),
           ],

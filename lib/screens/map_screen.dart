@@ -14,7 +14,10 @@ class _MapScreenState extends State<MapScreen> {
   final MapService _mapService = MapService();
   GoogleMapController? _controller;
 
-  static const CameraPosition _initialPosition = CameraPosition(target: LatLng(37.4219999, -122.0840575), zoom: 14);
+  static const CameraPosition _initialPosition = CameraPosition(
+    target: LatLng(6.9442, 79.8453), // Colombo Port Origin
+    zoom: 14,
+  );
 
   @override
   void initState() {
@@ -28,7 +31,6 @@ class _MapScreenState extends State<MapScreen> {
     if (status.isDenied || status.isRestricted) {
       final result = await Permission.locationWhenInUse.request();
       if (!result.isGranted) {
-        // show a simple dialog explaining why location is needed
         if (mounted) {
           showDialog(
             context: context,
@@ -57,7 +59,25 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Map — Route Tracker')),
+      appBar: AppBar(
+        title: const Text('Map — Route Tracker'),
+        actions: [
+          if (_mapService.routePoints.length >= 2)
+            IconButton(
+              icon: _mapService.isLoadingRoute
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                  : const Icon(Icons.alt_route_rounded),
+              tooltip: 'Calculate Route via Google Routes API',
+              onPressed: _mapService.isLoadingRoute
+                  ? null
+                  : () => _mapService.calculateRouteWithGoogleApi(),
+            ),
+        ],
+      ),
       body: GoogleMap(
         initialCameraPosition: _initialPosition,
         myLocationEnabled: true,
@@ -68,6 +88,7 @@ class _MapScreenState extends State<MapScreen> {
         onTap: (pos) {
           // Add destination marker on tap
           _mapService.addDestination(pos, label: 'Destination');
+          _mapService.addPoint(pos);
         },
       ),
       floatingActionButton: Column(
@@ -75,12 +96,14 @@ class _MapScreenState extends State<MapScreen> {
         children: [
           FloatingActionButton(
             heroTag: 'add_point',
+            tooltip: 'Add current center as point',
             child: const Icon(Icons.add_location_alt),
             onPressed: () {
-              // For demo: add current center as a route point
               _controller?.getVisibleRegion().then((bounds) {
-                final center = LatLng((bounds.northeast.latitude + bounds.southwest.latitude) / 2,
-                    (bounds.northeast.longitude + bounds.southwest.longitude) / 2);
+                final center = LatLng(
+                  (bounds.northeast.latitude + bounds.southwest.latitude) / 2,
+                  (bounds.northeast.longitude + bounds.southwest.longitude) / 2,
+                );
                 _mapService.addPoint(center);
               });
             },
@@ -89,6 +112,7 @@ class _MapScreenState extends State<MapScreen> {
           FloatingActionButton(
             heroTag: 'clear',
             backgroundColor: Colors.red,
+            tooltip: 'Clear route and markers',
             onPressed: _mapService.clearRoute,
             child: const Icon(Icons.clear),
           ),

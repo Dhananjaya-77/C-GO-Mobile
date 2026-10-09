@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/container_model.dart';
 import '../utils/app_theme.dart';
+import 'dashboard_animations.dart';
 
 class SensorTelemetryCard extends StatelessWidget {
   final ContainerInfo container;
@@ -73,19 +74,37 @@ class SensorTelemetryCard extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: isTampered ? AppTheme.tamperRed : AppTheme.securityGreen,
                     borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (isTampered ? AppTheme.tamperRed : AppTheme.securityGreen).withValues(alpha: 0.35),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    isTampered ? 'TAMPER BREACH' : 'ALL SEALS SECURE',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      PulsingBeaconDot(
+                        color: Colors.white,
+                        size: 5,
+                        pulseRadius: 10,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        isTampered ? 'TAMPER BREACH' : 'ALL SEALS SECURE',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

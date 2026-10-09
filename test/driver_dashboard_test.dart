@@ -40,7 +40,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.byType(InspectorDashboardScreen), findsOneWidget);
-    expect(find.text('Customs Inspector Portal'), findsOneWidget);
+    expect(find.text('Customs Inspector'), findsOneWidget);
     expect(find.byTooltip('Switch Dashboard Role'), findsNothing);
   });
 

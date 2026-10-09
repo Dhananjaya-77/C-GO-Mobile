@@ -4,6 +4,7 @@ import '../../models/driver_model.dart';
 import '../../models/trip_model.dart';
 import '../../models/vehicle_model.dart';
 import '../../utils/app_theme.dart';
+import '../../widgets/dashboard_animations.dart';
 import '../../widgets/srs_curved_header.dart';
 import 'tabs/driver_alerts_tab.dart';
 import 'tabs/driver_home_tab.dart';
@@ -275,7 +276,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
 
           // ── Active Tab View ───────────────────────────────────────────
           Expanded(
-            child: IndexedStack(
+            child: FadeIndexedStack(
               index: _currentTabIndex,
               children: [
                 // Tab 0: Figure 10 (Mobile Home Screen)
@@ -440,27 +441,62 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
     return SrsCurvedHeader(
       title: title,
       subtitle: subtitle,
+      gradientColors: AppTheme.driverGradient,
+      statusBadge: Container(
+        margin: const EdgeInsets.only(top: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.35)),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            PulsingBeaconDot(color: Color(0xFF38BDF8), size: 5, pulseRadius: 11),
+            SizedBox(width: 5),
+            Text(
+              'LIVE CORRIDOR TELEMETRY',
+              style: TextStyle(
+                color: Color(0xFFE0F2FE),
+                fontSize: 9.5,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
+        ),
+      ),
       onProfileTap: () {
         setState(() => _currentTabIndex = 4);
       },
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Emergency SOS Quick Button
-          IconButton(
-            tooltip: 'Emergency SOS',
-            icon: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: const BoxDecoration(
-                color: Color(0xFFEF4444),
-                shape: BoxShape.circle,
+          // Emergency SOS Quick Button with tactile spring animation
+          Tooltip(
+            message: 'Emergency SOS',
+            child: AnimatedScaleButton(
+              onPressed: _showSosDialog,
+              child: Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEF4444),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.4),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.warning_rounded,
+                    size: 18, color: Colors.white),
               ),
-              child: const Icon(Icons.warning_rounded,
-                  size: 18, color: Colors.white),
             ),
-            onPressed: _showSosDialog,
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 6),
           // Quick Logout Button
           IconButton(
             tooltip: 'Logout',
@@ -469,8 +505,8 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
           ),
           const SizedBox(width: 4),
           // User Avatar Button (Figure 10)
-          GestureDetector(
-            onTap: () => setState(() => _currentTabIndex = 4),
+          AnimatedScaleButton(
+            onPressed: () => setState(() => _currentTabIndex = 4),
             child: Container(
               width: 40,
               height: 40,
@@ -507,11 +543,16 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
       onTap: () => setState(() => _currentTabIndex = index),
       borderRadius: BorderRadius.circular(16),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFEFF6FF) : Colors.transparent, // Pill highlight
+          color: isSelected ? AppTheme.driverPillBg : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFBFDBFE) : Colors.transparent,
+            width: 1,
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -519,10 +560,15 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
             Stack(
               clipBehavior: Clip.none,
               children: [
-                Icon(
-                  isSelected ? selectedIcon : icon,
-                  color: isSelected ? const Color(0xFF1D4ED8) : const Color(0xFF64748B),
-                  size: 24,
+                AnimatedScale(
+                  scale: isSelected ? 1.12 : 1.0,
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutBack,
+                  child: Icon(
+                    isSelected ? selectedIcon : icon,
+                    color: isSelected ? AppTheme.driverAccent : const Color(0xFF64748B),
+                    size: 24,
+                  ),
                 ),
                 if (badgeCount != null && badgeCount > 0 && !isSelected)
                   Positioned(
@@ -552,7 +598,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected ? const Color(0xFF1D4ED8) : const Color(0xFF64748B),
+                color: isSelected ? AppTheme.driverAccent : const Color(0xFF64748B),
               ),
             ),
           ],
