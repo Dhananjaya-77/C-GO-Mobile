@@ -6,6 +6,7 @@ import '../../utils/alert_navigation_helper.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/corridor_map_widget.dart';
 import '../../widgets/dashboard_animations.dart';
+import '../../widgets/pre_trip_pdf_preview_dialog.dart';
 import '../../widgets/srs_curved_header.dart';
 import '../welcome_screen.dart';
 
@@ -106,9 +107,39 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
     });
   }
 
-  void _handleStage1Arm() {
+  Future<void> _handleStage1Arm({bool startTripAfterConfirm = true}) async {
     if (!_initFormKey.currentState!.validate()) return;
 
+    final destination = _selectedCorridor.contains('Grayline 1')
+        ? 'Grayline 1'
+        : (_selectedCorridor.contains('Grayline 2')
+            ? 'Grayline 2'
+            : 'Orugodawaththa');
+
+    await PreTripPdfPreviewDialog.generateAndShow(
+      context,
+      containerId: _containerIdController.text.trim(),
+      rfidLockId: _rfidLockController.text.trim(),
+      sealStatus: 'Closed',
+      weight: '18,500 kg',
+      containerType: '40ft HC',
+      iotDeviceId: _iotDeviceIdController.text.trim(),
+      physicalSealNumber: 'CUS-SL-778219',
+      vehiclePlate: _activeShipment.vehiclePlate,
+      origin: 'Colombo Fort',
+      destination: destination,
+      routeName: _selectedCorridor,
+      cusDecNumber: _cusDecController.text.trim(),
+      startTripAfterConfirm: startTripAfterConfirm,
+      onConfirmStartTrip: () {
+        if (startTripAfterConfirm) {
+          _executeStage1ArmAfterPdf();
+        }
+      },
+    );
+  }
+
+  void _executeStage1ArmAfterPdf() {
     setState(() => _isArming = true);
 
     Future.delayed(const Duration(milliseconds: 1200), () {
@@ -118,7 +149,7 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
         _alerts.insert(0, {
           'title': 'Seal Armed & Dispatched',
           'body':
-              'Container ${_containerIdController.text} sealed with ${_rfidLockController.text} and departed Gate 4.',
+              'Pre-Trip PDF generated. Container ${_containerIdController.text} sealed with ${_rfidLockController.text} and departed Gate 4.',
           'time': 'Just now',
           'isUnread': true,
           'type': 'success',
@@ -128,7 +159,7 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Smart Lock ${_rfidLockController.text} ARMED for container ${_containerIdController.text}. Tracking active.',
+            'Pre-Trip PDF saved! Smart Lock ${_rfidLockController.text} ARMED for container ${_containerIdController.text}. Tracking active.',
           ),
           backgroundColor: AppTheme.securityGreen,
           behavior: SnackBarBehavior.floating,
@@ -1666,9 +1697,28 @@ class _InspectorDashboardScreenState extends State<InspectorDashboardScreen> {
                   const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
+                    height: 44,
+                    child: OutlinedButton.icon(
+                      onPressed: _isArming
+                          ? null
+                          : () => _handleStage1Arm(startTripAfterConfirm: false),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF0E3352),
+                        side: const BorderSide(color: Color(0xFFCBD5E1)),
+                      ),
+                      icon: const Icon(Icons.picture_as_pdf_rounded, size: 18),
+                      label: const Text(
+                        'Generate Pre-Trip PDF',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
                     height: 48,
                     child: FilledButton.icon(
-                      onPressed: _isArming ? null : _handleStage1Arm,
+                      onPressed: _isArming ? null : () => _handleStage1Arm(startTripAfterConfirm: true),
                       style: FilledButton.styleFrom(
                         backgroundColor: const Color(0xFF0E3352),
                       ),

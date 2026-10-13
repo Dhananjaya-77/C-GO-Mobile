@@ -3,18 +3,57 @@ import '../../../models/container_model.dart';
 import '../../../models/trip_model.dart';
 import '../../../models/vehicle_model.dart';
 import '../../../utils/app_theme.dart';
+import '../../../widgets/pre_trip_pdf_preview_dialog.dart';
 
 class DriverTripTab extends StatelessWidget {
   final TripInfo? activeTrip;
   final VehicleInfo vehicle;
   final ContainerInfo container;
+  final VoidCallback? onStartTrip;
 
   const DriverTripTab({
     super.key,
     this.activeTrip,
     required this.vehicle,
     required this.container,
+    this.onStartTrip,
   });
+
+  Future<void> _generatePdfBeforeStartTrip(
+    BuildContext context, {
+    required bool startTripAfterConfirm,
+  }) async {
+    await PreTripPdfPreviewDialog.generateAndShow(
+      context,
+      containerId: activeTrip?.containerId ?? container.containerNumber,
+      rfidLockId: activeTrip?.rfidLockId ?? vehicle.assignedLockId,
+      sealStatus: 'Closed',
+      weight: '18,500 kg',
+      containerType: '40ft HC',
+      iotDeviceId: container.iotDeviceId,
+      physicalSealNumber: container.physicalSealNumber,
+      truckModel: vehicle.modelName,
+      vehiclePlate: vehicle.plateNumber,
+      origin: activeTrip?.origin ?? container.originPort,
+      destination: activeTrip?.destination ?? container.destinationDepot,
+      routeName: activeTrip?.routeName ?? container.designatedCorridor,
+      startTripAfterConfirm: startTripAfterConfirm,
+      onConfirmStartTrip: () {
+        if (startTripAfterConfirm) {
+          onStartTrip?.call();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Pre-Trip Clearance PDF generated & saved! Trip started.',
+              ),
+              backgroundColor: AppTheme.securityGreen,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +67,11 @@ class DriverTripTab extends StatelessWidget {
 
           const SizedBox(height: 16),
 
+          // ─── Pre-Trip PDF Generation & Start Trip Card ─────────────────
+          _buildPreTripPdfActionCard(context),
+
+          const SizedBox(height: 16),
+
           // ─── Figure 13: Route Information Card ─────────────────────────
           _buildRouteInfoCard(context),
 
@@ -35,6 +79,116 @@ class DriverTripTab extends StatelessWidget {
 
           // ─── Figure 13: Trip Progress Card ─────────────────────────────
           _buildTripProgressCard(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPreTripPdfActionCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.picture_as_pdf_rounded,
+                  color: Color(0xFF1D4ED8),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Pre-Trip Clearance PDF',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Auto-generates Container & Smart Lock report before starting trip',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _generatePdfBeforeStartTrip(
+                    context,
+                    startTripAfterConfirm: false,
+                  ),
+                  icon: const Icon(Icons.picture_as_pdf_outlined, size: 17),
+                  label: const Text(
+                    'Generate PDF',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF0E3352),
+                    side: const BorderSide(color: Color(0xFFCBD5E1)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () => _generatePdfBeforeStartTrip(
+                    context,
+                    startTripAfterConfirm: true,
+                  ),
+                  icon: const Icon(Icons.play_arrow_rounded, size: 19),
+                  label: const Text(
+                    'Start Trip',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF0E3352),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );

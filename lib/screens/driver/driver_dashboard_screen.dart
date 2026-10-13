@@ -343,6 +343,19 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                   activeTrip: _activeTrip,
                   vehicle: _vehicle,
                   container: ContainerInfo.mockPrimaryContainer,
+                  onStartTrip: () {
+                    setState(() {
+                      if (_activeTrip != null) {
+                        _activeTrip = _activeTrip!.copyWith(
+                          status: TripStatus.inProgress,
+                        );
+                      }
+                      _recentAlerts.insert(
+                        0,
+                        'Pre-Trip Clearance PDF generated & trip started for ${_activeTrip?.containerId ?? ContainerInfo.mockPrimaryContainer.containerNumber}',
+                      );
+                    });
+                  },
                 ),
 
                 // Tab 4: Figure 14 (Mobile Profile Page)

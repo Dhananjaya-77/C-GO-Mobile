@@ -7,6 +7,7 @@ import '../../../models/vehicle_model.dart';
 import '../../../utils/app_theme.dart';
 import '../../../widgets/corridor_map_widget.dart';
 import '../../../widgets/dashboard_animations.dart';
+import '../../../widgets/pre_trip_pdf_preview_dialog.dart';
 import '../../../widgets/sensor_telemetry_card.dart';
 
 class DriverHomeTab extends StatefulWidget {
@@ -398,8 +399,88 @@ class _DriverHomeTabState extends State<DriverHomeTab> {
               ),
             ],
           ),
+
+          const SizedBox(height: 14),
+
+          // Pre-Trip PDF Generation & Start Trip Actions
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _handleGeneratePreTripPdf(
+                    context,
+                    trip,
+                    startTripAfterConfirm: false,
+                  ),
+                  icon: const Icon(Icons.picture_as_pdf_rounded, size: 17),
+                  label: const Text(
+                    'Generate PDF',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF0E3352),
+                    side: const BorderSide(color: Color(0xFFCBD5E1)),
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () => _handleGeneratePreTripPdf(
+                    context,
+                    trip,
+                    startTripAfterConfirm: true,
+                  ),
+                  icon: const Icon(Icons.play_arrow_rounded, size: 19),
+                  label: const Text(
+                    'Start Trip',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF0E3352),
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
+    );
+  }
+
+  Future<void> _handleGeneratePreTripPdf(
+    BuildContext context,
+    TripInfo? trip, {
+    required bool startTripAfterConfirm,
+  }) async {
+    await PreTripPdfPreviewDialog.generateAndShow(
+      context,
+      containerId: trip?.containerId ?? _container.containerNumber,
+      rfidLockId: trip?.rfidLockId ?? widget.vehicle.assignedLockId,
+      sealStatus: 'Closed',
+      weight: '18,500 kg',
+      containerType: '40ft HC',
+      iotDeviceId: _container.iotDeviceId,
+      physicalSealNumber: _container.physicalSealNumber,
+      truckModel: widget.vehicle.modelName,
+      vehiclePlate: widget.vehicle.plateNumber,
+      origin: trip?.origin ?? _container.originPort,
+      destination: trip?.destination ?? _container.destinationDepot,
+      routeName: trip?.routeName ?? _container.designatedCorridor,
+      startTripAfterConfirm: startTripAfterConfirm,
+      onConfirmStartTrip: () {
+        if (startTripAfterConfirm) {
+          widget.onTripActionPressed();
+        }
+      },
     );
   }
 

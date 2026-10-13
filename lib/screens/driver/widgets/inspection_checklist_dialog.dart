@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../models/container_model.dart';
+import '../../../widgets/pre_trip_pdf_preview_dialog.dart';
 
 class InspectionChecklistDialog extends StatefulWidget {
   final String vehiclePlate;
@@ -193,12 +195,34 @@ class _InspectionChecklistDialogState extends State<InspectionChecklistDialog> {
                   Expanded(
                     child: FilledButton.icon(
                       onPressed: isAllChecked
-                          ? () {
-                              Navigator.of(context).pop();
-                              widget.onInspectionSubmitted(true);
+                          ? () async {
+                              final container =
+                                  ContainerInfo.mockPrimaryContainer;
+                              await PreTripPdfPreviewDialog.generateAndShow(
+                                context,
+                                containerId: container.containerNumber,
+                                rfidLockId: container.rfidLockId,
+                                sealStatus: 'Closed',
+                                weight: '18,500 kg',
+                                containerType: '40ft HC',
+                                iotDeviceId: container.iotDeviceId,
+                                physicalSealNumber:
+                                    container.physicalSealNumber,
+                                vehiclePlate: widget.vehiclePlate,
+                                origin: container.originPort,
+                                destination: container.destinationDepot,
+                                routeName: container.designatedCorridor,
+                                startTripAfterConfirm: true,
+                                onConfirmStartTrip: () {
+                                  if (context.mounted) {
+                                    Navigator.of(context).pop();
+                                  }
+                                  widget.onInspectionSubmitted(true);
+                                },
+                              );
                             }
                           : null,
-                      icon: const Icon(Icons.verified),
+                      icon: const Icon(Icons.picture_as_pdf_rounded),
                       label: const Text('Submit Clearance'),
                     ),
                   ),
